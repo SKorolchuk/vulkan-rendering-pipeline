@@ -1,0 +1,9 @@
+[submodule "src/modules/glfw"]
+	path = src/modules/glfw
+	url = https://github.com/SKorolchuk/glfw.git
+[submodule "src/modules/glm"]
+	path = src/modules/glm
+	url = https://github.com/SKorolchuk/glm.git
+[submodule "src/modules/opencv"]
+	path = src/modules/opencv
+	url = https://github.com/SKorolchuk/opencv.git
