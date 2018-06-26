@@ -43,6 +43,8 @@ void VulkanEndPointApplication::Init()
 	this->PickPhysicalDevice();
 	this->CreateLogicalDevice();
 	this->CreateSwapChain();
+	this->CreateImageViews();
+	this->CreateGraphicsPipeline();
 }
 
 void VulkanEndPointApplication::CreateSwapChain()
@@ -142,6 +144,10 @@ void VulkanEndPointApplication::Loop()
 
 void VulkanEndPointApplication::Clean()
 {
+	for (auto imageView : this->vkSwapChainImageViews) {
+		vkDestroyImageView(this->vkDevice, imageView, nullptr);
+	}
+
 	vkDestroySwapchainKHR(this->vkDevice, this->vkSwapChain, nullptr);
 	if (this->enableValidationLayers)
 	{
@@ -177,6 +183,41 @@ void VulkanEndPointApplication::SetupDebugCallback()
 	{
 		throw std::runtime_error("failed to set up debug vulkan callback!");
 	}
+}
+
+void VulkanEndPointApplication::CreateImageViews()
+{
+	this->vkSwapChainImageViews.resize(this->vkSwapChainImages.size());
+
+	for (size_t i = 0; i < this->vkSwapChainImages.size(); i++)
+	{
+		VkImageViewCreateInfo createInfo = {};
+
+		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		createInfo.image = this->vkSwapChainImages[i];
+
+		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		createInfo.format = this->vkSwapChainImageFormat;
+		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+		createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		createInfo.subresourceRange.baseMipLevel = 0;
+		createInfo.subresourceRange.levelCount = 1;
+		createInfo.subresourceRange.baseArrayLayer = 0;
+		createInfo.subresourceRange.layerCount = 1;
+
+		if (vkCreateImageView(this->vkDevice, &createInfo, nullptr, &this->vkSwapChainImageViews[i]) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create image views!");
+		}
+	}
+}
+
+void VulkanEndPointApplication::CreateGraphicsPipeline()
+{
+
 }
 
 void VulkanEndPointApplication::CreateLogicalDevice()

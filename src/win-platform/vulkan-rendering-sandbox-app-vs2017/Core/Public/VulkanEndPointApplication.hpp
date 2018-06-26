@@ -38,6 +38,8 @@ private:
 	void CreateSwapChain();
 	void PickPhysicalDevice();
 	void CreateSurface();
+	void CreateImageViews();
+	void CreateGraphicsPipeline();
 	bool IsDeviceSuitable(VkPhysicalDevice device);
 	bool CheckDeviceExtensionsSupport(VkPhysicalDevice device);
 	static int RateDeviceSuitability(VkPhysicalDevice device);
@@ -51,6 +53,7 @@ private:
 	VkSurfaceKHR vkSurface;
 	VkSwapchainKHR vkSwapChain;
 	std::vector<VkImage> vkSwapChainImages;
+	std::vector<VkImageView> vkSwapChainImageViews;
 	VkFormat vkSwapChainImageFormat;
 	VkExtent2D vkExtent;
 	VkColorSpaceKHR vkSwapChainImageColorSpace;
