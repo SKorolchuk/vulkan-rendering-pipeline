@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Entry">
+      <UniqueIdentifier>{2a8116cf-fb7f-4b31-855a-36af4292f718}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private">
+      <UniqueIdentifier>{48b64162-831c-4bb7-898d-7c908a45b845}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public">
+      <UniqueIdentifier>{c07a2c19-70bd-4f7e-9d5c-c086b25d590e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\App">
+      <UniqueIdentifier>{90a90211-4718-4133-a948-9ea93ed5effd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\App">
+      <UniqueIdentifier>{8dde491f-0948-46ab-9543-2c2e1769d02d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\VkExtensions">
+      <UniqueIdentifier>{1085bbf1-1250-4ded-97e0-d6c13c9e6917}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\VkExtensions">
+      <UniqueIdentifier>{19a9c2f4-6877-4dd0-bacf-4b217931c49a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Entry</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Entry</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\QueueFamilyIndices.hpp">
+      <Filter>Public\VkExtensions</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\SwapChainSupportDetails.hpp">
+      <Filter>Public\VkExtensions</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\VulkanEndPointApplication.hpp">
+      <Filter>Public\App</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Entry</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\VulkanEndPointApplication.cpp">
+      <Filter>Private\App</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\SwapChainSupportDetails.cpp">
+      <Filter>Private\VkExtensions</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Entry</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\QueueFamilyIndices.cpp">
+      <Filter>Private\VkExtensions</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
