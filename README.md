@@ -1,8 +1,6 @@
 
 # Vulkan Rendering Pipeline Examples
 
---------------------------------------------------------
-
 ## Repository contains set of example applications based on Vulkan API
 
 --------------------------------------------------------
@@ -21,13 +19,11 @@
 
 --------------------------------------------------------
 
---------------------------------------------------------
-
-- # Features in progress
-	- ## Add `SPIR-V` shader integration
-	- ## Add rendering of `.OBJ` models
-	- ## Add mipmaps in pipeline
-	- ## Add tesselation control shaders
-	- ## Add UI scene visualization controls
+- ## Features in progress
+	- ### Add `SPIR-V` shader integration
+	- ### Add rendering of `.OBJ` models
+	- ### Add mipmaps in pipeline
+	- ### Add tesselation control shaders
+	- ### Add UI scene visualization controls
 
 --------------------------------------------------------
