@@ -42,6 +42,7 @@ private:
 	void CreateGraphicsPipeline();
 	bool IsDeviceSuitable(VkPhysicalDevice device);
 	bool CheckDeviceExtensionsSupport(VkPhysicalDevice device);
+	void CreateRenderPass();
 	static int RateDeviceSuitability(VkPhysicalDevice device);
 	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device) const;
 	VkInstance vkInstance;
@@ -57,6 +58,10 @@ private:
 	VkFormat vkSwapChainImageFormat;
 	VkExtent2D vkExtent;
 	VkColorSpaceKHR vkSwapChainImageColorSpace;
+
+	VkRenderPass vkRenderPass;
+	VkPipelineLayout vkPipelineLayout;
+
 	int width;
 	int height;
 	std::string title;
