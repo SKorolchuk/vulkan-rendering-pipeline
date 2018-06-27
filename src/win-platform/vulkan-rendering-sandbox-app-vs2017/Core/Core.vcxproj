@@ -159,6 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Public\IOUtils.hpp" />
     <ClInclude Include="Public\QueueFamilyIndices.hpp" />
     <ClInclude Include="Public\SwapChainSupportDetails.hpp" />
     <ClInclude Include="Public\VulkanEndPointApplication.hpp" />
@@ -167,6 +168,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Private\IOUtils.cpp" />
     <ClCompile Include="Private\QueueFamilyIndices.cpp" />
     <ClCompile Include="Private\SwapChainSupportDetails.cpp" />
     <ClCompile Include="Private\VulkanEndPointApplication.cpp" />
@@ -176,6 +178,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Shaders\test_fragment_shader.spv" />
+    <None Include="..\Shaders\test_vertrex_shader.spv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

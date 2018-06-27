@@ -67,6 +67,11 @@ private:
 	const std::vector<const char*> deviceExtensions = {
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
+
+	// shaders
+
+	VkShaderModule vkVertrexShader;
+	VkShaderModule vkFragmentShader;
 };
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(

@@ -144,6 +144,9 @@ void VulkanEndPointApplication::Loop()
 
 void VulkanEndPointApplication::Clean()
 {
+	vkDestroyShaderModule(this->vkDevice, this->vkFragmentShader, nullptr);
+	vkDestroyShaderModule(this->vkDevice, this->vkVertrexShader, nullptr);
+
 	for (auto imageView : this->vkSwapChainImageViews) {
 		vkDestroyImageView(this->vkDevice, imageView, nullptr);
 	}
@@ -217,6 +220,28 @@ void VulkanEndPointApplication::CreateImageViews()
 
 void VulkanEndPointApplication::CreateGraphicsPipeline()
 {
+	std::vector<char> vertrexShaderText = ShaderExtensions::ReadShaderFile("../Shaders/test_vertrex_shader.spv");
+	std::vector<char> fragmentShaderText = ShaderExtensions::ReadShaderFile("../Shaders/test_fragment_shader.spv");
+
+	this->vkVertrexShader = ShaderExtensions::CreateShaderModule(this->vkDevice, vertrexShaderText);
+	this->vkFragmentShader = ShaderExtensions::CreateShaderModule(this->vkDevice, fragmentShaderText);
+
+	VkPipelineShaderStageCreateInfo vertShaderStageCreateInfo = {};
+
+	vertShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+	vertShaderStageCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+	vertShaderStageCreateInfo.module = this->vkVertrexShader;
+	vertShaderStageCreateInfo.pName = "main";
+
+	VkPipelineShaderStageCreateInfo fragmentShaderStageCreateInfo = {};
+
+	fragmentShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+	fragmentShaderStageCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+	fragmentShaderStageCreateInfo.module = this->vkFragmentShader;
+	fragmentShaderStageCreateInfo.pName = "main";
+
+	VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageCreateInfo, fragmentShaderStageCreateInfo };
+
 
 }
 

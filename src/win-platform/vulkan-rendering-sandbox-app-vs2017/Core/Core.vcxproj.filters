@@ -22,6 +22,15 @@
     <Filter Include="Private\VkExtensions">
       <UniqueIdentifier>{19a9c2f4-6877-4dd0-bacf-4b217931c49a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Private\Utils">
+      <UniqueIdentifier>{2917bc55-f102-4b05-9156-776c1acbcb3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Utils">
+      <UniqueIdentifier>{8088511f-f547-4175-b8af-7e97c5884458}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{350f50a4-b044-4663-913e-f4e88a13987d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -38,6 +47,9 @@
     </ClInclude>
     <ClInclude Include="Public\VulkanEndPointApplication.hpp">
       <Filter>Public\App</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IOUtils.hpp">
+      <Filter>Public\Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -56,5 +68,16 @@
     <ClCompile Include="Private\QueueFamilyIndices.cpp">
       <Filter>Private\VkExtensions</Filter>
     </ClCompile>
+    <ClCompile Include="Private\IOUtils.cpp">
+      <Filter>Private\Utils</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Shaders\test_fragment_shader.spv">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\Shaders\test_vertrex_shader.spv">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
