@@ -1,42 +1,31 @@
 #include <stdafx.h>
 
-VulkanEndPointApplication::VulkanEndPointApplication() :
-	width(800),
-	height(600),
-	title("Vulkan App")
+VulkanCore::RenderEngine::RenderEngine(int width, int height, GLFWwindow* window) :
+	ViewportWidth(width),
+	ViewportHeight(height),
+	GLWindow(window)
 {
+	if (!this->IsPipelineInitialized)
+	{
+		this->RenderEngine::BootstrapPipeline();
+	}
 }
 
-VulkanEndPointApplication::VulkanEndPointApplication(
-	int witdth,
-	int height,
-	std::string title) :
-	width(width),
-	height(height),
-	title(title)
+VulkanCore::RenderEngine::~RenderEngine()
 {
+	if (this->IsPipelineInitialized)
+	{
+		this->RenderEngine::CleanPipeline();
+	}
+
+	this->GLWindow = nullptr;
 }
 
-void VulkanEndPointApplication::Run()
+void VulkanCore::RenderEngine::BootstrapPipeline()
 {
-	this->OpenWindow();
-	this->Init();
-	this->Loop();
-	this->Clean();
-}
+	if (this->IsPipelineInitialized)
+		return;
 
-void VulkanEndPointApplication::OpenWindow()
-{
-	glfwInit();
-
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-
-	this->window = glfwCreateWindow(this->width, this->height, this->title.c_str(), nullptr, nullptr);
-}
-
-void VulkanEndPointApplication::Init()
-{
 	this->CreateVulkanInstance();
 	this->SetupDebugCallback();
 	this->CreateSurface();
@@ -46,15 +35,77 @@ void VulkanEndPointApplication::Init()
 	this->CreateImageViews();
 	this->CreateRenderPass();
 	this->CreateGraphicsPipeline();
+	this->CreateFrameBuffers();
+
+	this->IsPipelineInitialized = true;
 }
 
-void VulkanEndPointApplication::CreateSwapChain()
+void VulkanCore::RenderEngine::CleanPipeline()
+{
+	if (!this->IsPipelineInitialized)
+		return;
+
+	for (auto frameBuffer : this->vkSwapChainFrameBuffers)
+	{
+		vkDestroyFramebuffer(this->vkDevice, frameBuffer, nullptr);
+	}
+
+	vkDestroyPipelineLayout(this->vkDevice, this->vkPipelineLayout, nullptr);
+	vkDestroyRenderPass(this->vkDevice, this->vkRenderPass, nullptr);
+
+	for (auto imageView : this->vkSwapChainImageViews) {
+		vkDestroyImageView(this->vkDevice, imageView, nullptr);
+	}
+
+	vkDestroySwapchainKHR(this->vkDevice, this->vkSwapChain, nullptr);
+	if (this->enableValidationLayers)
+	{
+		this->DestroyVkDebugReportCallback(this->vkInstance, this->vkCallback, nullptr);
+	}
+
+	vkDestroyDevice(this->vkDevice, nullptr);
+	vkDestroySurfaceKHR(this->vkInstance, this->vkSurface, nullptr);
+	vkDestroyInstance(this->vkInstance, nullptr);
+
+	this->IsPipelineInitialized = false;
+}
+
+
+
+void VulkanCore::RenderEngine::CreateFrameBuffers()
+{
+	this->vkSwapChainFrameBuffers.resize(this->vkSwapChainImageViews.size());
+
+	for (size_t i = 0; i < this->vkSwapChainImageViews.size(); ++i)
+	{
+		VkImageView attachments[] = {
+			this->vkSwapChainImageViews[i]
+		};
+
+		VkFramebufferCreateInfo frameBufferCreateInfo = {};
+
+		frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		frameBufferCreateInfo.renderPass = this->vkRenderPass;
+		frameBufferCreateInfo.attachmentCount = 1;
+		frameBufferCreateInfo.pAttachments = attachments;
+		frameBufferCreateInfo.width = this->vkExtent.width;
+		frameBufferCreateInfo.height = this->vkExtent.height;
+		frameBufferCreateInfo.layers = 1;
+
+		if (vkCreateFramebuffer(this->vkDevice, &frameBufferCreateInfo, nullptr, &this->vkSwapChainFrameBuffers[i]) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to create frame buffer!");
+		}
+	}
+}
+
+void VulkanCore::RenderEngine::CreateSwapChain()
 {
 	const SwapChainSupportDetails swapChainSupportDetails = QuerySwapChainSupport(this->vkPhysicalDevice, this->vkSurface);
 
 	const VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupportDetails.formats);
 	const VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupportDetails.presentModes);
-	const VkExtent2D extent = ChooseSwapExtent(swapChainSupportDetails.capabilities, this->width, this->height);
+	const VkExtent2D extent = ChooseSwapExtent(swapChainSupportDetails.capabilities, this->ViewportWidth, this->ViewportHeight);
 
 	uint32_t imageCount = swapChainSupportDetails.capabilities.minImageCount + 1;
 
@@ -116,7 +167,7 @@ void VulkanEndPointApplication::CreateSwapChain()
 	this->vkSwapChainImageColorSpace = surfaceFormat.colorSpace;
 }
 
-void VulkanEndPointApplication::CreateSurface() {
+void VulkanCore::RenderEngine::CreateSurface() {
 	/*VkWin32SurfaceCreateInfoKHR createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 	createInfo.hwnd = glfwGetWin32Window(this->window);
@@ -125,52 +176,15 @@ void VulkanEndPointApplication::CreateSurface() {
 	/*auto CreateWin32SurfaceKHR = (PFN_vkCreateWin32SurfaceKHR)vkGetInstanceProcAddr(this->vkInstance, "vkCreateWin32SurfaceKHR");
 
 	if (!CreateWin32SurfaceKHR || CreateWin32SurfaceKHR(this->vkInstance, &createInfo, nullptr, &this->vkSurface) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create window surface!");
+	throw std::runtime_error("failed to create window surface!");
 	}  */
 
-	if (glfwCreateWindowSurface(this->vkInstance, this->window, nullptr, &this->vkSurface) != VK_SUCCESS) {
+	if (glfwCreateWindowSurface(this->vkInstance, this->GLWindow, nullptr, &this->vkSurface) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create window surface!");
 	}
 }
 
-void VulkanEndPointApplication::Loop()
-{
-	this->Update();
-
-	while (!glfwWindowShouldClose(this->window))
-	{
-		glfwPollEvents();
-	}
-}
-
-void VulkanEndPointApplication::Clean()
-{
-	vkDestroyPipelineLayout(this->vkDevice, this->vkPipelineLayout, nullptr);
-	vkDestroyRenderPass(this->vkDevice, this->vkRenderPass, nullptr);
-
-	for (auto imageView : this->vkSwapChainImageViews) {
-		vkDestroyImageView(this->vkDevice, imageView, nullptr);
-	}
-
-	vkDestroySwapchainKHR(this->vkDevice, this->vkSwapChain, nullptr);
-	if (this->enableValidationLayers)
-	{
-		this->DestroyVkDebugReportCallback(this->vkInstance, this->vkCallback, nullptr);
-	}
-
-	vkDestroyDevice(this->vkDevice, nullptr);
-	vkDestroySurfaceKHR(this->vkInstance, this->vkSurface, nullptr);
-	vkDestroyInstance(this->vkInstance, nullptr);
-
-	glfwDestroyWindow(this->window);
-	glfwTerminate();
-}
-
-void VulkanEndPointApplication::Update()
-{
-}
-
-void VulkanEndPointApplication::SetupDebugCallback()
+void VulkanCore::RenderEngine::SetupDebugCallback()
 {
 	if (!this->enableValidationLayers)
 	{
@@ -181,7 +195,7 @@ void VulkanEndPointApplication::SetupDebugCallback()
 
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
 	createInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
-	createInfo.pfnCallback = debugCallback;
+	createInfo.pfnCallback = DebugCallback;
 
 	if (this->CreateVkDebugReportCallback(this->vkInstance, &createInfo, nullptr, &this->vkCallback) != VK_SUCCESS)
 	{
@@ -189,7 +203,7 @@ void VulkanEndPointApplication::SetupDebugCallback()
 	}
 }
 
-void VulkanEndPointApplication::CreateImageViews()
+void VulkanCore::RenderEngine::CreateImageViews()
 {
 	this->vkSwapChainImageViews.resize(this->vkSwapChainImages.size());
 
@@ -219,7 +233,7 @@ void VulkanEndPointApplication::CreateImageViews()
 	}
 }
 
-void VulkanEndPointApplication::CreateGraphicsPipeline()
+void VulkanCore::RenderEngine::CreateGraphicsPipeline()
 {
 	std::vector<char> vertrexShaderText = ShaderExtensions::ReadShaderFile("../Shaders/test_vertrex_shader.spv");
 	std::vector<char> fragmentShaderText = ShaderExtensions::ReadShaderFile("../Shaders/test_fragment_shader.spv");
@@ -315,7 +329,7 @@ void VulkanEndPointApplication::CreateGraphicsPipeline()
 	vkDestroyShaderModule(this->vkDevice, this->vkVertrexShader, nullptr);
 }
 
-void VulkanEndPointApplication::CreateLogicalDevice()
+void VulkanCore::RenderEngine::CreateLogicalDevice()
 {
 	QueueFamilyIndices indices = this->FindQueueFamilies(this->vkPhysicalDevice);
 
@@ -351,7 +365,7 @@ void VulkanEndPointApplication::CreateLogicalDevice()
 	}
 	else {
 		createInfo.enabledLayerCount = 0;
-	}  
+	}
 
 	if (vkCreateDevice(this->vkPhysicalDevice, &createInfo, nullptr, &this->vkDevice) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create logical device!");
@@ -360,7 +374,7 @@ void VulkanEndPointApplication::CreateLogicalDevice()
 	vkGetDeviceQueue(this->vkDevice, indices.presentFamily, 0, &this->vkPresentQueue);
 }
 
-QueueFamilyIndices VulkanEndPointApplication::FindQueueFamilies(VkPhysicalDevice device) const {
+QueueFamilyIndices VulkanCore::RenderEngine::FindQueueFamilies(VkPhysicalDevice device) const {
 	QueueFamilyIndices indices;
 
 	uint32_t queueFamilyCount = 0;
@@ -389,7 +403,7 @@ QueueFamilyIndices VulkanEndPointApplication::FindQueueFamilies(VkPhysicalDevice
 	return indices;
 }
 
-void VulkanEndPointApplication::PickPhysicalDevice() {
+void VulkanCore::RenderEngine::PickPhysicalDevice() {
 	uint32_t deviceCount = 0;
 	vkEnumeratePhysicalDevices(this->vkInstance, &deviceCount, nullptr);
 	if (deviceCount == 0) {
@@ -423,12 +437,12 @@ void VulkanEndPointApplication::PickPhysicalDevice() {
 	}
 }
 
-int VulkanEndPointApplication::RateDeviceSuitability(VkPhysicalDevice device) {
+int VulkanCore::RenderEngine::RateDeviceSuitability(VkPhysicalDevice device) {
 	VkPhysicalDeviceProperties deviceProperties;
 	VkPhysicalDeviceFeatures deviceFeatures;
 	vkGetPhysicalDeviceProperties(device, &deviceProperties);
 	vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-	
+
 	int score = 0;
 
 	// Discrete GPUs have a significant performance advantage
@@ -447,7 +461,7 @@ int VulkanEndPointApplication::RateDeviceSuitability(VkPhysicalDevice device) {
 	return score;
 }
 
-bool VulkanEndPointApplication::IsDeviceSuitable(VkPhysicalDevice device) {
+bool VulkanCore::RenderEngine::IsDeviceSuitable(VkPhysicalDevice device) {
 	VkPhysicalDeviceProperties deviceProperties;
 	VkPhysicalDeviceFeatures deviceFeatures;
 	vkGetPhysicalDeviceProperties(device, &deviceProperties);
@@ -467,13 +481,13 @@ bool VulkanEndPointApplication::IsDeviceSuitable(VkPhysicalDevice device) {
 	}
 
 	return indices.IsComplete()
-	&& deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU
-	&& deviceFeatures.geometryShader
-	&& requiredExtensionsSupported
-	&& swapChainValidationResult;
+		&& deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU
+		&& deviceFeatures.geometryShader
+		&& requiredExtensionsSupported
+		&& swapChainValidationResult;
 }
 
-bool VulkanEndPointApplication::CheckDeviceExtensionsSupport(VkPhysicalDevice device)
+bool VulkanCore::RenderEngine::CheckDeviceExtensionsSupport(VkPhysicalDevice device)
 {
 	uint32_t extensionCount;
 
@@ -485,7 +499,7 @@ bool VulkanEndPointApplication::CheckDeviceExtensionsSupport(VkPhysicalDevice de
 
 	std::set<std::string> requiredExtensions(this->deviceExtensions.begin(), this->deviceExtensions.end());
 
-	for (const auto& extension: availableExtensions)
+	for (const auto& extension : availableExtensions)
 	{
 		requiredExtensions.erase(extension.extensionName);
 	}
@@ -493,7 +507,7 @@ bool VulkanEndPointApplication::CheckDeviceExtensionsSupport(VkPhysicalDevice de
 	return requiredExtensions.empty();
 }
 
-void VulkanEndPointApplication::CreateRenderPass()
+void VulkanCore::RenderEngine::CreateRenderPass()
 {
 	VkAttachmentDescription colorAttachment = {};
 	colorAttachment.format = this->vkSwapChainImageFormat;
@@ -527,7 +541,7 @@ void VulkanEndPointApplication::CreateRenderPass()
 	}
 }
 
-void VulkanEndPointApplication::CreateVulkanInstance()
+void VulkanCore::RenderEngine::CreateVulkanInstance()
 {
 	VkApplicationInfo appInfo = {};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -576,10 +590,10 @@ void VulkanEndPointApplication::CreateVulkanInstance()
 	if (this->CreateVkInstanceWithCheck(&createInfo, nullptr, &this->vkInstance) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create instance!");
-	}	
+	}
 }
 
-VkResult VulkanEndPointApplication::CreateVkInstanceWithCheck(
+VkResult VulkanCore::RenderEngine::CreateVkInstanceWithCheck(
 	const VkInstanceCreateInfo* pCreateInfo,
 	const VkAllocationCallbacks* pAllocator,
 	VkInstance* instance)
@@ -593,7 +607,7 @@ VkResult VulkanEndPointApplication::CreateVkInstanceWithCheck(
 	return vkCreateInstance(pCreateInfo, pAllocator, instance);
 }
 
-VkResult VulkanEndPointApplication::CreateVkDebugReportCallback(
+VkResult VulkanCore::RenderEngine::CreateVkDebugReportCallback(
 	VkInstance instance,
 	const VkDebugReportCallbackCreateInfoEXT* pCreateInfo,
 	const VkAllocationCallbacks* pAllocator,
@@ -611,7 +625,7 @@ VkResult VulkanEndPointApplication::CreateVkDebugReportCallback(
 	}
 }
 
-void VulkanEndPointApplication::DestroyVkDebugReportCallback(
+void VulkanCore::RenderEngine::DestroyVkDebugReportCallback(
 	VkInstance instance,
 	VkDebugReportCallbackEXT callback,
 	const VkAllocationCallbacks* pAllocator)
@@ -624,7 +638,7 @@ void VulkanEndPointApplication::DestroyVkDebugReportCallback(
 	}
 }
 
-bool VulkanEndPointApplication::CheckVkValidationLayerSupport()
+bool VulkanCore::RenderEngine::CheckVkValidationLayerSupport()
 {
 	uint32_t layerCount;
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -650,7 +664,7 @@ bool VulkanEndPointApplication::CheckVkValidationLayerSupport()
 	return true;
 }
 
-std::vector<const char*> VulkanEndPointApplication::GetRequiredExtensions()
+std::vector<const char*> VulkanCore::RenderEngine::GetRequiredExtensions()
 {
 	uint32_t glfwExtensionCount = 0;
 	const char **glfwExtensions;

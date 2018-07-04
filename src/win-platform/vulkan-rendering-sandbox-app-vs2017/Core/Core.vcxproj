@@ -162,7 +162,8 @@
     <ClInclude Include="Public\IOUtils.hpp" />
     <ClInclude Include="Public\QueueFamilyIndices.hpp" />
     <ClInclude Include="Public\SwapChainSupportDetails.hpp" />
-    <ClInclude Include="Public\VulkanEndPointApplication.hpp" />
+    <ClInclude Include="Public\EndPointApplication.hpp" />
+    <ClInclude Include="Public\RenderEngine.hpp" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -171,7 +172,8 @@
     <ClCompile Include="Private\IOUtils.cpp" />
     <ClCompile Include="Private\QueueFamilyIndices.cpp" />
     <ClCompile Include="Private\SwapChainSupportDetails.cpp" />
-    <ClCompile Include="Private\VulkanEndPointApplication.cpp" />
+    <ClCompile Include="Private\EndPointApplication.cpp" />
+    <ClCompile Include="Private\RenderEngine.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

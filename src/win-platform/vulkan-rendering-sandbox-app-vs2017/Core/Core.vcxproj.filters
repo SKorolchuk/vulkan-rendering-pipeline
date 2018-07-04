@@ -45,19 +45,19 @@
     <ClInclude Include="Public\SwapChainSupportDetails.hpp">
       <Filter>Public\VkExtensions</Filter>
     </ClInclude>
-    <ClInclude Include="Public\VulkanEndPointApplication.hpp">
-      <Filter>Public\App</Filter>
-    </ClInclude>
     <ClInclude Include="Public\IOUtils.hpp">
       <Filter>Public\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\EndPointApplication.hpp">
+      <Filter>Public\App</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RenderEngine.hpp">
+      <Filter>Public\App</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Entry</Filter>
-    </ClCompile>
-    <ClCompile Include="Private\VulkanEndPointApplication.cpp">
-      <Filter>Private\App</Filter>
     </ClCompile>
     <ClCompile Include="Private\SwapChainSupportDetails.cpp">
       <Filter>Private\VkExtensions</Filter>
@@ -70,6 +70,12 @@
     </ClCompile>
     <ClCompile Include="Private\IOUtils.cpp">
       <Filter>Private\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\EndPointApplication.cpp">
+      <Filter>Private\App</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\RenderEngine.cpp">
+      <Filter>Private\App</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
