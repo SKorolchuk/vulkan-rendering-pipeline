@@ -49,6 +49,7 @@ void VulkanCore::EndPointApplication::Init()
 
 void VulkanCore::EndPointApplication::Update()
 {
+	this->VkEngine->Draw();
 }
 
 void VulkanCore::EndPointApplication::Loop()

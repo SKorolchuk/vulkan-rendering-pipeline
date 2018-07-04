@@ -36,6 +36,8 @@ void VulkanCore::RenderEngine::BootstrapPipeline()
 	this->CreateRenderPass();
 	this->CreateGraphicsPipeline();
 	this->CreateFrameBuffers();
+	this->CreateCommandPool();
+	this->CreateCommandBuffers();
 
 	this->IsPipelineInitialized = true;
 }
@@ -45,11 +47,14 @@ void VulkanCore::RenderEngine::CleanPipeline()
 	if (!this->IsPipelineInitialized)
 		return;
 
+	vkDestroyCommandPool(this->vkDevice, this->vkCommandPool, nullptr);
+
 	for (auto frameBuffer : this->vkSwapChainFrameBuffers)
 	{
 		vkDestroyFramebuffer(this->vkDevice, frameBuffer, nullptr);
 	}
 
+	vkDestroyPipeline(this->vkDevice, this->vkGraphicsPipeline, nullptr);
 	vkDestroyPipelineLayout(this->vkDevice, this->vkPipelineLayout, nullptr);
 	vkDestroyRenderPass(this->vkDevice, this->vkRenderPass, nullptr);
 
@@ -70,6 +75,9 @@ void VulkanCore::RenderEngine::CleanPipeline()
 	this->IsPipelineInitialized = false;
 }
 
+void VulkanCore::RenderEngine::Draw()
+{
+}
 
 
 void VulkanCore::RenderEngine::CreateFrameBuffers()
@@ -95,6 +103,72 @@ void VulkanCore::RenderEngine::CreateFrameBuffers()
 		if (vkCreateFramebuffer(this->vkDevice, &frameBufferCreateInfo, nullptr, &this->vkSwapChainFrameBuffers[i]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("Failed to create frame buffer!");
+		}
+	}
+}
+
+void VulkanCore::RenderEngine::CreateCommandPool()
+{
+	QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(this->vkPhysicalDevice);
+
+	VkCommandPoolCreateInfo poolCreateInfo = {};
+
+	poolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	poolCreateInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
+	poolCreateInfo.flags = 0; // Optional param
+
+	if (vkCreateCommandPool(this->vkDevice, &poolCreateInfo, nullptr, &this->vkCommandPool) != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to create command pool");
+	}
+}
+
+void VulkanCore::RenderEngine::CreateCommandBuffers()
+{
+	this->vkCommandBuffers.resize(this->vkSwapChainFrameBuffers.size());
+
+	VkCommandBufferAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.commandPool = this->vkCommandPool;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandBufferCount = static_cast<uint32_t>(this->vkCommandBuffers.size());
+
+	if (vkAllocateCommandBuffers(this->vkDevice, &allocInfo, this->vkCommandBuffers.data()) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to allocate command buffers!");
+	}
+
+	for (size_t i = 0; i < this->vkCommandBuffers.size(); i++) {
+		VkCommandBufferBeginInfo beginInfo = {};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+		beginInfo.pInheritanceInfo = nullptr; // Optional
+
+		if (vkBeginCommandBuffer(this->vkCommandBuffers[i], &beginInfo) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to begin recording command buffer!");
+		}
+
+		VkRenderPassBeginInfo renderPassInfo = {};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass = this->vkRenderPass;
+		renderPassInfo.framebuffer = this->vkSwapChainFrameBuffers[i];
+
+		renderPassInfo.renderArea.offset = { 0, 0 };
+		renderPassInfo.renderArea.extent = this->vkExtent;
+
+		VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+		renderPassInfo.clearValueCount = 1;
+		renderPassInfo.pClearValues = &clearColor;
+
+		vkCmdBeginRenderPass(this->vkCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		vkCmdBindPipeline(this->vkCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, this->vkGraphicsPipeline);
+
+		vkCmdDraw(this->vkCommandBuffers[i], 3, 1, 0, 0);
+
+		vkCmdEndRenderPass(this->vkCommandBuffers[i]);
+
+		if (vkEndCommandBuffer(this->vkCommandBuffers[i]) != VK_SUCCESS) {
+			throw std::runtime_error("failed to record command buffer!");
 		}
 	}
 }
@@ -243,15 +317,15 @@ void VulkanCore::RenderEngine::CreateGraphicsPipeline()
 
 	VkPipelineShaderStageCreateInfo vertShaderStageCreateInfo = {};
 
-	vertShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+	vertShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	vertShaderStageCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
 	vertShaderStageCreateInfo.module = this->vkVertrexShader;
 	vertShaderStageCreateInfo.pName = "main";
 
 	VkPipelineShaderStageCreateInfo fragmentShaderStageCreateInfo = {};
 
-	fragmentShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-	fragmentShaderStageCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+	fragmentShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	fragmentShaderStageCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 	fragmentShaderStageCreateInfo.module = this->vkFragmentShader;
 	fragmentShaderStageCreateInfo.pName = "main";
 
@@ -270,8 +344,8 @@ void VulkanCore::RenderEngine::CreateGraphicsPipeline()
 	VkViewport viewport = {};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = (float)this->vkExtent.width;
-	viewport.height = (float)this->vkExtent.height;
+	viewport.width = static_cast<float>(this->vkExtent.width);
+	viewport.height = static_cast<float>(this->vkExtent.height);
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 
@@ -323,6 +397,25 @@ void VulkanCore::RenderEngine::CreateGraphicsPipeline()
 
 	if (vkCreatePipelineLayout(this->vkDevice, &pipelineLayoutInfo, nullptr, &this->vkPipelineLayout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create pipeline layout!");
+	}
+
+	VkGraphicsPipelineCreateInfo pipelineInfo = {};
+	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	pipelineInfo.stageCount = 2;
+	pipelineInfo.pStages = shaderStages;
+	pipelineInfo.pVertexInputState = &vertexInputInfo;
+	pipelineInfo.pInputAssemblyState = &inputAssembly;
+	pipelineInfo.pViewportState = &viewportState;
+	pipelineInfo.pRasterizationState = &rasterizer;
+	pipelineInfo.pMultisampleState = &multisampling;
+	pipelineInfo.pColorBlendState = &colorBlending;
+	pipelineInfo.layout = this->vkPipelineLayout;
+	pipelineInfo.renderPass = this->vkRenderPass;
+	pipelineInfo.subpass = 0;
+	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+
+	if (vkCreateGraphicsPipelines(this->vkDevice, nullptr, 1, &pipelineInfo, nullptr, &this->vkGraphicsPipeline) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
 	vkDestroyShaderModule(this->vkDevice, this->vkFragmentShader, nullptr);

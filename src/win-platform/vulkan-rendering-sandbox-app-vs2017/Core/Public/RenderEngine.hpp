@@ -9,6 +9,7 @@ namespace VulkanCore
 		 ~RenderEngine();
 		 virtual void BootstrapPipeline();
 		 virtual void CleanPipeline();
+		 virtual void Draw();
 
 	 protected:
 		 int ViewportWidth;
@@ -40,6 +41,8 @@ namespace VulkanCore
 		 void CreateImageViews();
 		 void CreateGraphicsPipeline();
 		 void CreateFrameBuffers();
+		 void CreateCommandPool();
+		 void CreateCommandBuffers();
 		 bool IsDeviceSuitable(VkPhysicalDevice device);
 		 bool CheckDeviceExtensionsSupport(VkPhysicalDevice device);
 		 void CreateRenderPass();
@@ -62,8 +65,12 @@ namespace VulkanCore
 
 		 VkRenderPass vkRenderPass;
 		 VkPipelineLayout vkPipelineLayout;
+		 VkPipeline vkGraphicsPipeline;
+
+		 // command pool and etc.
 
 		 VkCommandPool vkCommandPool;
+		 std::vector<VkCommandBuffer> vkCommandBuffers;
 
 		 const bool enableValidationLayers = true;
 		 const std::vector<const char*> validationLayers = {
