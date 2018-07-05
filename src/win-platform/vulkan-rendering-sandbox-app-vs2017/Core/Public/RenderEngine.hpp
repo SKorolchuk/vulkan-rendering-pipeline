@@ -43,6 +43,7 @@ namespace VulkanCore
 		 void CreateFrameBuffers();
 		 void CreateCommandPool();
 		 void CreateCommandBuffers();
+		 void CreatePipelineSemaphores();
 		 bool IsDeviceSuitable(VkPhysicalDevice device);
 		 bool CheckDeviceExtensionsSupport(VkPhysicalDevice device);
 		 void CreateRenderPass();
@@ -66,6 +67,11 @@ namespace VulkanCore
 		 VkRenderPass vkRenderPass;
 		 VkPipelineLayout vkPipelineLayout;
 		 VkPipeline vkGraphicsPipeline;
+
+		 // semaphores
+
+		 VkSemaphore vkImageAvailableSemLock;
+		 VkSemaphore vkRenderFinishedSemLock;
 
 		 // command pool and etc.
 

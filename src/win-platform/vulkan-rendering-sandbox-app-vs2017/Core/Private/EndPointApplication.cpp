@@ -56,8 +56,8 @@ void VulkanCore::EndPointApplication::Loop()
 {
 	while (!glfwWindowShouldClose(this->window))
 	{
-		this->Update();
 		glfwPollEvents();
+		this->Update();
 	}
 }
 

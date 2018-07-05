@@ -21,10 +21,11 @@
 --------------------------------------------------------
 
 - ## Features in progress
-	- ### Add `SPIR-V` shader integration
+	- ### Add `SPIR-V` shader integration (Integrate auto-align of shader text size)
 	- ### Add rendering of `.OBJ` models
 	- ### Add mipmaps in pipeline
 	- ### Add tessellation control shaders
+	- ### Add Scene graph file format
 	- ### Add UI scene visualization controls
 	- ### Simple OpenCV texture pre-processing
 	- ### Integrate Cross-platform sound library
