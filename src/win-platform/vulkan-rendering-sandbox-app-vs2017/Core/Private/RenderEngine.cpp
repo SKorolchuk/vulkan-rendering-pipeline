@@ -126,6 +126,13 @@ void VulkanCore::RenderEngine::Draw()
 	presentInfo.pResults = nullptr; // Optional param
 
 	vkQueuePresentKHR(this->vkPresentQueue, &presentInfo);
+
+	vkQueueWaitIdle(this->vkPresentQueue);
+}
+
+void VulkanCore::RenderEngine::WaitDevice()
+{
+	vkDeviceWaitIdle(this->vkDevice);
 }
 
 
@@ -224,14 +231,19 @@ void VulkanCore::RenderEngine::CreateCommandBuffers()
 
 void VulkanCore::RenderEngine::CreatePipelineSemaphores()
 {
-	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+	this->vkImageAvailableSemLocks.resize(MAX_FRAMES_IN_FLIGHT);
+	this->vkRenderFinishedSemLocks.resize(MAX_FRAMES_IN_FLIGHT);
 
+	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
 	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	if (vkCreateSemaphore(this->vkDevice, &semaphoreCreateInfo, nullptr, &this->vkImageAvailableSemLock) != VK_SUCCESS
-		|| vkCreateSemaphore(this->vkDevice, &semaphoreCreateInfo, nullptr, &this->vkRenderFinishedSemLock) != VK_SUCCESS)
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
 	{
-		throw std::runtime_error("Failed to create pipeline lock semaphores");
+		if (vkCreateSemaphore(this->vkDevice, &semaphoreCreateInfo, nullptr, &this->vkRenderFinishedSemLocks[i]) != VK_SUCCESS
+			|| vkCreateSemaphore(this->vkDevice, &semaphoreCreateInfo, nullptr, &this->vkRenderFinishedSemLocks[i]) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to create pipeline lock semaphores");
+		}
 	}
 }
 

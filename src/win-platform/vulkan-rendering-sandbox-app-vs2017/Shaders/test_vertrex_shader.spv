@@ -8,9 +8,9 @@ out gl_PerVertex {
 layout(location = 0) out vec3 fragColor;
 
 vec2 positions[4] = vec2[](
-    vec2(0.0, -0.75),
-    vec2(0.75, 0.75),
-    vec2(-0.75, 0.75),
+    vec2(0.0, -5.75),
+    vec2(5.75, 5.75),
+    vec2(-5.75, 5.75),
 	vec2(-0.9, 0.0)
 ); 
 

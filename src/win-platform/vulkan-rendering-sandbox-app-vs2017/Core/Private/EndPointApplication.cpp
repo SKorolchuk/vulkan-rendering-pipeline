@@ -1,8 +1,8 @@
 #include <stdafx.h>
 
 VulkanCore::EndPointApplication::EndPointApplication() :
-	width(800),
-	height(600),
+	width(1280),
+	height(1024),
 	title("Vulkan App")
 {
 }
@@ -10,7 +10,7 @@ VulkanCore::EndPointApplication::EndPointApplication() :
 VulkanCore::EndPointApplication::EndPointApplication(
 	int witdth,
 	int height,
-	std::string title) :
+	const char* title) :
 	width(width),
 	height(height),
 	title(title)
@@ -47,6 +47,11 @@ void VulkanCore::EndPointApplication::Init()
 	this->VkEngine->BootstrapPipeline();
 }
 
+void VulkanCore::EndPointApplication::Wait()
+{
+	this->VkEngine->WaitDevice();
+}
+
 void VulkanCore::EndPointApplication::Update()
 {
 	this->VkEngine->Draw();
@@ -59,6 +64,8 @@ void VulkanCore::EndPointApplication::Loop()
 		glfwPollEvents();
 		this->Update();
 	}
+
+	this->Wait();
 }
 
 void VulkanCore::EndPointApplication::Clean()

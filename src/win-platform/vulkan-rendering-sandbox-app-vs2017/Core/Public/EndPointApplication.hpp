@@ -6,13 +6,14 @@ namespace VulkanCore
 	{
 	public:
 		EndPointApplication();
-		EndPointApplication(int witdth, int height, std::string title);
+		EndPointApplication(int witdth, int height, const char* title);
 		~EndPointApplication();
 		virtual void Run();
 
 	protected:
 		virtual void OpenWindow();
 		virtual void Init();
+		virtual void Wait();
 		virtual void Loop();
 		virtual void Update();
 		virtual void Clean();

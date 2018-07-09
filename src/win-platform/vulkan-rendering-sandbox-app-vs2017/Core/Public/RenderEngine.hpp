@@ -5,11 +5,13 @@ namespace VulkanCore
 	 class RenderEngine
 	 {
 	 public:
+		 const static int MAX_FRAMES_IN_FLIGHT = 2;
 		 RenderEngine(int width, int height, GLFWwindow* window);
 		 ~RenderEngine();
 		 virtual void BootstrapPipeline();
 		 virtual void CleanPipeline();
 		 virtual void Draw();
+		 virtual void WaitDevice();
 
 	 protected:
 		 int ViewportWidth;
@@ -70,8 +72,8 @@ namespace VulkanCore
 
 		 // semaphores
 
-		 VkSemaphore vkImageAvailableSemLock;
-		 VkSemaphore vkRenderFinishedSemLock;
+		 std::vector<VkSemaphore> vkImageAvailableSemLocks;
+		 std::vector<VkSemaphore> vkRenderFinishedSemLocks;
 
 		 // command pool and etc.
 
