@@ -48,6 +48,8 @@ void VulkanCore::RenderEngine::CleanPipeline()
 	if (!this->IsPipelineInitialized)
 		return;
 
+	this->CleanSwapChain();
+
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
 	{
 		vkDestroySemaphore(this->vkDevice, this->vkRenderFinishedSemLocks[i], nullptr);
@@ -57,26 +59,11 @@ void VulkanCore::RenderEngine::CleanPipeline()
 
 	vkDestroyCommandPool(this->vkDevice, this->vkCommandPool, nullptr);
 
-	for (auto frameBuffer : this->vkSwapChainFrameBuffers)
-	{
-		vkDestroyFramebuffer(this->vkDevice, frameBuffer, nullptr);
-	}
-
-	vkDestroyPipeline(this->vkDevice, this->vkGraphicsPipeline, nullptr);
-	vkDestroyPipelineLayout(this->vkDevice, this->vkPipelineLayout, nullptr);
-	vkDestroyRenderPass(this->vkDevice, this->vkRenderPass, nullptr);
-
-	for (auto imageView : this->vkSwapChainImageViews) {
-		vkDestroyImageView(this->vkDevice, imageView, nullptr);
-	}
-
-	vkDestroySwapchainKHR(this->vkDevice, this->vkSwapChain, nullptr);
+	vkDestroyDevice(this->vkDevice, nullptr);
 	if (this->enableValidationLayers)
 	{
 		this->DestroyVkDebugReportCallback(this->vkInstance, this->vkCallback, nullptr);
 	}
-
-	vkDestroyDevice(this->vkDevice, nullptr);
 	vkDestroySurfaceKHR(this->vkInstance, this->vkSurface, nullptr);
 	vkDestroyInstance(this->vkInstance, nullptr);
 
@@ -90,7 +77,7 @@ void VulkanCore::RenderEngine::Draw()
 
 	uint32_t imageIndex;
 
-	vkAcquireNextImageKHR(
+	VkResult result = vkAcquireNextImageKHR(
 		this->vkDevice,
 		this->vkSwapChain,
 		std::numeric_limits<uint64_t>::max(),
@@ -133,6 +120,17 @@ void VulkanCore::RenderEngine::Draw()
 	presentInfo.pResults = nullptr; // Optional param
 
 	vkQueuePresentKHR(this->vkPresentQueue, &presentInfo);
+
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || FrameBufferResized)
+	{
+		FrameBufferResized = false;
+		this->UpdateSwapChain();
+		return;
+	}
+	else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+	{
+		throw std::runtime_error("Failed to acquire swap chain image view");
+	}
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
@@ -260,13 +258,57 @@ void VulkanCore::RenderEngine::CreatePipelineSyncObjects()
 	}
 }
 
+void VulkanCore::RenderEngine::CleanSwapChain()
+{
+	for (auto frameBuffer : this->vkSwapChainFrameBuffers)
+	{
+		vkDestroyFramebuffer(this->vkDevice, frameBuffer, nullptr);
+	}
+
+	vkFreeCommandBuffers(
+		this->vkDevice,
+		this->vkCommandPool,
+		static_cast<uint32_t>(this->vkCommandBuffers.size()),
+		this->vkCommandBuffers.data());
+
+	vkDestroyPipeline(this->vkDevice, this->vkGraphicsPipeline, nullptr);
+	vkDestroyPipelineLayout(this->vkDevice, this->vkPipelineLayout, nullptr);
+	vkDestroyRenderPass(this->vkDevice, this->vkRenderPass, nullptr);
+
+	for (auto imageView : this->vkSwapChainImageViews) {
+		vkDestroyImageView(this->vkDevice, imageView, nullptr);
+	}
+
+	vkDestroySwapchainKHR(this->vkDevice, this->vkSwapChain, nullptr);
+}
+
+void VulkanCore::RenderEngine::UpdateSwapChain()
+{
+	int width = 0, height = 0;
+	while (width == 0 || height == 0) {
+		glfwGetFramebufferSize(this->GLWindow, &width, &height);
+		glfwWaitEvents();
+	}
+
+	vkDeviceWaitIdle(this->vkDevice);
+
+	this->CleanSwapChain();
+
+	this->CreateSwapChain();
+	this->CreateImageViews();
+	this->CreateRenderPass();
+	this->CreateGraphicsPipeline();
+	this->CreateFrameBuffers();
+	this->CreateCommandBuffers();
+}
+
 void VulkanCore::RenderEngine::CreateSwapChain()
 {
 	const SwapChainSupportDetails swapChainSupportDetails = QuerySwapChainSupport(this->vkPhysicalDevice, this->vkSurface);
 
 	const VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupportDetails.formats);
 	const VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupportDetails.presentModes);
-	const VkExtent2D extent = ChooseSwapExtent(swapChainSupportDetails.capabilities, this->ViewportWidth, this->ViewportHeight);
+	const VkExtent2D extent = ChooseSwapExtent(swapChainSupportDetails.capabilities, this->GLWindow);
 
 	uint32_t imageCount = swapChainSupportDetails.capabilities.minImageCount + 1;
 

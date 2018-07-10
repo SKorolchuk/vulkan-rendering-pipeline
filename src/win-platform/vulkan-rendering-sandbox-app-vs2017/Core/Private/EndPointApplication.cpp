@@ -38,6 +38,8 @@ void VulkanCore::EndPointApplication::OpenWindow()
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
 	this->window = glfwCreateWindow(this->width, this->height, this->title.c_str(), nullptr, nullptr);
+	glfwSetWindowUserPointer(this->window, this);
+	glfwSetFramebufferSizeCallback(this->window, VulkanCore::FramebufferResizeCallback);
 
 	this->VkEngine = new RenderEngine(this->width, this->height, this->window);
 }

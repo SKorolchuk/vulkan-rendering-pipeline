@@ -12,6 +12,7 @@ namespace VulkanCore
 		 virtual void CleanPipeline();
 		 virtual void Draw();
 		 virtual void WaitDevice();
+		 bool FrameBufferResized = false;
 
 	 protected:
 		 int ViewportWidth;
@@ -46,6 +47,8 @@ namespace VulkanCore
 		 void CreateCommandPool();
 		 void CreateCommandBuffers();
 		 void CreatePipelineSyncObjects();
+		 void CleanSwapChain();
+		 void UpdateSwapChain();
 		 bool IsDeviceSuitable(VkPhysicalDevice device);
 		 bool CheckDeviceExtensionsSupport(VkPhysicalDevice device);
 		 void CreateRenderPass();

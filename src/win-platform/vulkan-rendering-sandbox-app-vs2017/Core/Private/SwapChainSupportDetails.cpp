@@ -76,7 +76,7 @@ VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> avail
 	return bestMode;
 }
 
-VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, int defaultWidth, int defaultHeight)
+VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* window)
 {
 	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
 	{
@@ -84,9 +84,13 @@ VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, int de
 	}
 	else
 	{
+		int actualWidth, actualHeight;
+
+		glfwGetFramebufferSize(window, &actualWidth, &actualHeight);
+
 		VkExtent2D actualExtent = {
-			defaultWidth,
-			defaultHeight
+			actualWidth,
+			actualHeight
 		};
 
 		actualExtent.width = std::max(
