@@ -251,7 +251,7 @@ void VulkanCore::RenderEngine::CreatePipelineSyncObjects()
 	
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
 	{
-		if (vkCreateSemaphore(this->vkDevice, &semaphoreCreateInfo, nullptr, &this->vkRenderFinishedSemLocks[i]) != VK_SUCCESS
+		if (vkCreateSemaphore(this->vkDevice, &semaphoreCreateInfo, nullptr, &this->vkImageAvailableSemLocks[i]) != VK_SUCCESS
 			|| vkCreateSemaphore(this->vkDevice, &semaphoreCreateInfo, nullptr, &this->vkRenderFinishedSemLocks[i]) != VK_SUCCESS
 			|| vkCreateFence(this->vkDevice, &fenceCreateInfo, nullptr, &this->vkInFlightSyncFences[i]) != VK_SUCCESS)
 		{
