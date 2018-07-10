@@ -38,7 +38,7 @@ void VulkanCore::RenderEngine::BootstrapPipeline()
 	this->CreateFrameBuffers();
 	this->CreateCommandPool();
 	this->CreateCommandBuffers();
-	this->CreatePipelineSemaphores();
+	this->CreatePipelineSyncObjects();
 
 	this->IsPipelineInitialized = true;
 }
@@ -48,8 +48,12 @@ void VulkanCore::RenderEngine::CleanPipeline()
 	if (!this->IsPipelineInitialized)
 		return;
 
-	vkDestroySemaphore(this->vkDevice, this->vkRenderFinishedSemLock, nullptr);
-	vkDestroySemaphore(this->vkDevice, this->vkImageAvailableSemLock, nullptr);
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
+	{
+		vkDestroySemaphore(this->vkDevice, this->vkRenderFinishedSemLocks[i], nullptr);
+		vkDestroySemaphore(this->vkDevice, this->vkImageAvailableSemLocks[i], nullptr);
+		vkDestroyFence(this->vkDevice, this->vkInFlightSyncFences[i], nullptr);
+	}
 
 	vkDestroyCommandPool(this->vkDevice, this->vkCommandPool, nullptr);
 
@@ -81,20 +85,23 @@ void VulkanCore::RenderEngine::CleanPipeline()
 
 void VulkanCore::RenderEngine::Draw()
 {
+	vkWaitForFences(this->vkDevice, 1, &this->vkInFlightSyncFences[this->currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
+	vkResetFences(this->vkDevice, 1, &this->vkInFlightSyncFences[this->currentFrame]);
+
 	uint32_t imageIndex;
 
 	vkAcquireNextImageKHR(
 		this->vkDevice,
 		this->vkSwapChain,
 		std::numeric_limits<uint64_t>::max(),
-		this->vkImageAvailableSemLock,
+		this->vkImageAvailableSemLocks[this->currentFrame],
 		VK_NULL_HANDLE,
 		&imageIndex);
 
 	VkSubmitInfo submitInfo = {};
 
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	VkSemaphore waitLocks[] = { this->vkImageAvailableSemLock };
+	VkSemaphore waitLocks[] = { this->vkImageAvailableSemLocks[this->currentFrame] };
 
 	VkPipelineStageFlags waitFlags[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 	submitInfo.waitSemaphoreCount = 1;
@@ -104,11 +111,11 @@ void VulkanCore::RenderEngine::Draw()
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &this->vkCommandBuffers[imageIndex];
 
-	VkSemaphore signalLocks[] = { this->vkRenderFinishedSemLock };
+	VkSemaphore signalLocks[] = { this->vkRenderFinishedSemLocks[this->currentFrame] };
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalLocks;
 
-	if (vkQueueSubmit(this->vkGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+	if (vkQueueSubmit(this->vkGraphicsQueue, 1, &submitInfo, this->vkInFlightSyncFences[this->currentFrame]) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to submit draw commands");
 	}
@@ -127,7 +134,7 @@ void VulkanCore::RenderEngine::Draw()
 
 	vkQueuePresentKHR(this->vkPresentQueue, &presentInfo);
 
-	vkQueueWaitIdle(this->vkPresentQueue);
+	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 void VulkanCore::RenderEngine::WaitDevice()
@@ -229,18 +236,24 @@ void VulkanCore::RenderEngine::CreateCommandBuffers()
 	}
 }
 
-void VulkanCore::RenderEngine::CreatePipelineSemaphores()
+void VulkanCore::RenderEngine::CreatePipelineSyncObjects()
 {
 	this->vkImageAvailableSemLocks.resize(MAX_FRAMES_IN_FLIGHT);
 	this->vkRenderFinishedSemLocks.resize(MAX_FRAMES_IN_FLIGHT);
+	this->vkInFlightSyncFences.resize(MAX_FRAMES_IN_FLIGHT);
 
 	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
 	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
+	VkFenceCreateInfo fenceCreateInfo = {};
+	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+	
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
 	{
 		if (vkCreateSemaphore(this->vkDevice, &semaphoreCreateInfo, nullptr, &this->vkRenderFinishedSemLocks[i]) != VK_SUCCESS
-			|| vkCreateSemaphore(this->vkDevice, &semaphoreCreateInfo, nullptr, &this->vkRenderFinishedSemLocks[i]) != VK_SUCCESS)
+			|| vkCreateSemaphore(this->vkDevice, &semaphoreCreateInfo, nullptr, &this->vkRenderFinishedSemLocks[i]) != VK_SUCCESS
+			|| vkCreateFence(this->vkDevice, &fenceCreateInfo, nullptr, &this->vkInFlightSyncFences[i]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("Failed to create pipeline lock semaphores");
 		}

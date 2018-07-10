@@ -45,7 +45,7 @@ namespace VulkanCore
 		 void CreateFrameBuffers();
 		 void CreateCommandPool();
 		 void CreateCommandBuffers();
-		 void CreatePipelineSemaphores();
+		 void CreatePipelineSyncObjects();
 		 bool IsDeviceSuitable(VkPhysicalDevice device);
 		 bool CheckDeviceExtensionsSupport(VkPhysicalDevice device);
 		 void CreateRenderPass();
@@ -74,6 +74,8 @@ namespace VulkanCore
 
 		 std::vector<VkSemaphore> vkImageAvailableSemLocks;
 		 std::vector<VkSemaphore> vkRenderFinishedSemLocks;
+		 std::vector<VkFence> vkInFlightSyncFences;
+		 size_t currentFrame = 0;
 
 		 // command pool and etc.
 
