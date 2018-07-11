@@ -5,7 +5,6 @@ layout(location = 0) in vec3 fragColor;
 
 layout(location = 0) out vec4 outColor;
 
-
 uniform float time;
 uniform vec2 mouse;
 uniform vec2 resolution;

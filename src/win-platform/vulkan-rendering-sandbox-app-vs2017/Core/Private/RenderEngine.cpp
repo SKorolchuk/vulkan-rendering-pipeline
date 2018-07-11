@@ -450,8 +450,8 @@ void VulkanCore::RenderEngine::CreateImageViews()
 
 void VulkanCore::RenderEngine::CreateGraphicsPipeline()
 {
-	std::vector<char> vertrexShaderText = ShaderExtensions::ReadShaderFile("../Shaders/test_vertrex_shader.spv");
-	std::vector<char> fragmentShaderText = ShaderExtensions::ReadShaderFile("../Shaders/test_fragment_shader.spv");
+	std::vector<char> vertrexShaderText = ShaderExtensions::ReadShaderFile("../Shaders/test_vertrex_shader.vert");
+	std::vector<char> fragmentShaderText = ShaderExtensions::ReadShaderFile("../Shaders/test_fragment_shader.frag");
 
 	this->vkVertrexShader = ShaderExtensions::CreateShaderModule(this->vkDevice, vertrexShaderText);
 	this->vkFragmentShader = ShaderExtensions::CreateShaderModule(this->vkDevice, fragmentShaderText);
