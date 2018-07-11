@@ -165,6 +165,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Public\GraphUtils.hpp" />
     <ClInclude Include="Public\IOUtils.hpp" />
     <ClInclude Include="Public\QueueFamilyIndices.hpp" />
     <ClInclude Include="Public\SwapChainSupportDetails.hpp" />
@@ -175,6 +176,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Private\GraphUtils.cpp" />
     <ClCompile Include="Private\IOUtils.cpp" />
     <ClCompile Include="Private\QueueFamilyIndices.cpp" />
     <ClCompile Include="Private\SwapChainSupportDetails.cpp" />

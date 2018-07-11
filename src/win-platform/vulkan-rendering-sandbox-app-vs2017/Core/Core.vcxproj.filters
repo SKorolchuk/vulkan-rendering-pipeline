@@ -54,6 +54,9 @@
     <ClInclude Include="Public\RenderEngine.hpp">
       <Filter>Public\App</Filter>
     </ClInclude>
+    <ClInclude Include="Public\GraphUtils.hpp">
+      <Filter>Public\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -76,6 +79,9 @@
     </ClCompile>
     <ClCompile Include="Private\RenderEngine.cpp">
       <Filter>Private\App</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\GraphUtils.cpp">
+      <Filter>Private\Utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
