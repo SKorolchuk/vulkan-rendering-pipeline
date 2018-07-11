@@ -35,6 +35,7 @@ namespace VulkanCore
 			 VkDebugReportCallbackEXT callback,
 			 const VkAllocationCallbacks* pAllocator);
 		 std::vector<const char*> GetRequiredExtensions();
+		 bool ThrottleCheck();
 		 void CreateVulkanInstance();
 		 void SetupDebugCallback();
 		 void CreateLogicalDevice();
@@ -97,6 +98,11 @@ namespace VulkanCore
 
 		 VkShaderModule vkVertrexShader;
 		 VkShaderModule vkFragmentShader;
+
+	 private:
+		std::chrono::time_point
+	 		<std::chrono::system_clock,
+	 		std::chrono::milliseconds> lastDrawTime;
 	 };
 
 	 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(

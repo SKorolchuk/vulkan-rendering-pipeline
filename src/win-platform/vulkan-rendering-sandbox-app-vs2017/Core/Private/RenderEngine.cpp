@@ -72,6 +72,18 @@ void VulkanCore::RenderEngine::CleanPipeline()
 
 void VulkanCore::RenderEngine::Draw()
 {
+	/*if (this->ThrottleCheck())
+	{
+		return;
+	}
+	else
+	{
+		this->lastDrawTime = 
+			std::chrono::time_point_cast<std::chrono::milliseconds>(
+				std::chrono::system_clock::now()
+			);
+	} */ 
+
 	vkWaitForFences(this->vkDevice, 1, &this->vkInFlightSyncFences[this->currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
 	vkResetFences(this->vkDevice, 1, &this->vkInFlightSyncFences[this->currentFrame]);
 
@@ -915,4 +927,13 @@ std::vector<const char*> VulkanCore::RenderEngine::GetRequiredExtensions()
 	}
 
 	return extensions;
+}
+
+bool VulkanCore::RenderEngine::ThrottleCheck()
+{
+	auto currentTime = std::chrono::system_clock::now();
+
+	double dilation = std::chrono::duration<double, std::milli>(currentTime - this->lastDrawTime).count();
+
+	return dilation < 1000/60;
 }
