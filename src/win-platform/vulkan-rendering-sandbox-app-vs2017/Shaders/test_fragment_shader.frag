@@ -13,7 +13,7 @@ float random( vec2 p )
 {	
 	return fract( sin( fract( sin( p.x ) ) + p.y) *142.17563);
 }
-     
+       
 float worley( vec2 p, float timeSpeed )
 {
 	float d = 10.0;
