@@ -4,8 +4,8 @@ void MemoryUtils::CreateBuffer(
 	VkDeviceSize size,
 	VkBufferUsageFlags usageFlags,
 	VkMemoryPropertyFlags properties,
-	VkDevice& device,
-	VkPhysicalDevice& physicalDevice,
+	VkDevice device,
+	VkPhysicalDevice physicalDevice,
 	VkBuffer& buffer,
 	VkDeviceMemory& bufferMemory)
 {
@@ -41,7 +41,7 @@ void MemoryUtils::CreateBuffer(
 uint32_t MemoryUtils::FindMemoryType(
 	uint32_t typeFilter,
 	VkMemoryPropertyFlags properties,
-	VkPhysicalDevice& physicalDevice)
+	VkPhysicalDevice physicalDevice)
 {
 	VkPhysicalDeviceMemoryProperties memProperties;
 	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
@@ -61,9 +61,9 @@ void MemoryUtils::CopyBuffer(
 	VkBuffer srcBuffer,
 	VkBuffer dstBuffer,
 	VkDeviceSize size,
-	VkCommandPool& commandPool,
-	VkDevice& device,
-	VkQueue& graphicsQueue)
+	VkCommandPool commandPool,
+	VkDevice device,
+	VkQueue graphicsQueue)
 {
 	VkCommandBufferAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

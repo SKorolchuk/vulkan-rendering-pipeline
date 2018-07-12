@@ -3,14 +3,14 @@
 
 #include <chrono>
 #include <vector>
-#include "Infrastructure/Extensions/QueueFamilyIndices.hpp"
 #include <iostream>
-#include "Utils/MemoryUtils.hpp"
-#include "Utils/GraphUtils.hpp"
-#include "Infrastructure/Extensions/SwapChainSupportDetails.hpp"
-#include "Utils/IOUtils.hpp"
 #include <set>
 #include <map>
+#include "Utils/MemoryUtils.hpp"
+#include "Utils/GraphUtils.hpp"
+#include "Utils/IOUtils.hpp"
+#include "Infrastructure/Extensions/QueueFamilyIndices.hpp"
+#include "Infrastructure/Extensions/SwapChainSupportDetails.hpp"
 
 namespace VulkanCore
 {
@@ -66,6 +66,7 @@ namespace VulkanCore
 		 bool CheckDeviceExtensionsSupport(VkPhysicalDevice device) const;
 		 void CreateRenderPass();
 		 void CreateVertexBuffer();
+		 void CreateIndexBuffer();
 		 static int RateDeviceSuitability(VkPhysicalDevice device);
 		 QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device) const;
 		 VkInstance vkInstance;
@@ -89,6 +90,8 @@ namespace VulkanCore
 
 		 VkBuffer vkVertexBuffer;
 		 VkDeviceMemory vkVertexBufferMemory;
+		 VkBuffer vkIndexBuffer;
+		 VkDeviceMemory vkIndexBufferMemory;
 
 		 // semaphores
 

@@ -38,6 +38,7 @@ void VulkanCore::RenderEngine::BootstrapPipeline()
 	this->CreateFrameBuffers();
 	this->CreateCommandPool();
 	this->CreateVertexBuffer();
+	this->CreateIndexBuffer();
 	this->CreateCommandBuffers();
 	this->CreatePipelineSyncObjects();
 
@@ -50,6 +51,9 @@ void VulkanCore::RenderEngine::CleanPipeline()
 		return;
 
 	this->CleanSwapChain();
+
+	vkDestroyBuffer(this->vkDevice, vkIndexBuffer, nullptr);
+	vkFreeMemory(this->vkDevice, vkIndexBufferMemory, nullptr);
 
 	vkDestroyBuffer(this->vkDevice, this->vkVertexBuffer, nullptr);
 	vkFreeMemory(this->vkDevice, this->vkVertexBufferMemory, nullptr);
@@ -230,7 +234,7 @@ void VulkanCore::RenderEngine::CreateCommandBuffers()
 		renderPassInfo.renderArea.offset = { 0, 0 };
 		renderPassInfo.renderArea.extent = this->vkExtent;
 
-		VkClearValue clearColor = { 0.3f, 0.3f, 0.3f, 0.5f };
+		VkClearValue clearColor = { 0.33f, 0.43f, 0.22f, 0.5f };
 		renderPassInfo.clearValueCount = 1;
 		renderPassInfo.pClearValues = &clearColor;
 
@@ -242,7 +246,9 @@ void VulkanCore::RenderEngine::CreateCommandBuffers()
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(this->vkCommandBuffers[i], 0, 1, vertexBuffers, offsets);
 
-		vkCmdDraw(this->vkCommandBuffers[i], static_cast<uint32_t>(Vertex::GetSampleVertexMatrix().size()), 1, 0, 0);
+		vkCmdBindIndexBuffer(this->vkCommandBuffers[i], this->vkIndexBuffer, 0, VK_INDEX_TYPE_UINT16);
+
+		vkCmdDrawIndexed(this->vkCommandBuffers[i], static_cast<uint32_t>(Vertex::GetSampleVertexIndices().size()), 1, 0, 0, 0);
 
 		vkCmdEndRenderPass(this->vkCommandBuffers[i]);
 
@@ -838,6 +844,49 @@ void VulkanCore::RenderEngine::CreateVertexBuffer()
 	MemoryUtils::CopyBuffer(
 		stagingBuffer,
 		this->vkVertexBuffer,
+		bufferSize,
+		this->vkCommandPool,
+		this->vkDevice,
+		this->vkGraphicsQueue);
+
+	vkDestroyBuffer(this->vkDevice, stagingBuffer, nullptr);
+	vkFreeMemory(this->vkDevice, stagingBufferMemory, nullptr);
+}
+
+void VulkanCore::RenderEngine::CreateIndexBuffer()
+{
+	std::vector<uint16_t> indices = Vertex::GetSampleVertexIndices();
+	VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+
+	MemoryUtils::CreateBuffer(
+		bufferSize,
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		this->vkDevice,
+		this->vkPhysicalDevice,
+		stagingBuffer,
+		stagingBufferMemory);
+
+	void* data;
+	vkMapMemory(this->vkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+	memcpy(data, indices.data(), static_cast<size_t>(bufferSize));
+	vkUnmapMemory(this->vkDevice, stagingBufferMemory);
+
+	MemoryUtils::CreateBuffer(
+		bufferSize,
+		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		this->vkDevice,
+		this->vkPhysicalDevice,
+		vkIndexBuffer,
+		vkIndexBufferMemory);
+
+	MemoryUtils::CopyBuffer(
+		stagingBuffer,
+		vkIndexBuffer,
 		bufferSize,
 		this->vkCommandPool,
 		this->vkDevice,

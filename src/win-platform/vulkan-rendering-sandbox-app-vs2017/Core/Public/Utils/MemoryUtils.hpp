@@ -10,22 +10,22 @@ namespace MemoryUtils
 		VkDeviceSize size,
 		VkBufferUsageFlags usageFlags,
 		VkMemoryPropertyFlags properties,
-		VkDevice& device,
-		VkPhysicalDevice& physicalDevice,
+		VkDevice device,
+		VkPhysicalDevice physicalDevice,
 		VkBuffer& buffer,
 		VkDeviceMemory& bufferMemory);
 
 	uint32_t FindMemoryType(
 		uint32_t typeFilter,
 		VkMemoryPropertyFlags properties,
-		VkPhysicalDevice& physicalDevice);
+		VkPhysicalDevice physicalDevice);
 
 	void CopyBuffer(
 		VkBuffer srcBuffer,
 		VkBuffer dstBuffer,
 		VkDeviceSize size,
-		VkCommandPool& commandPool,
-		VkDevice& device,
-		VkQueue& graphicsQueue);
+		VkCommandPool commandPool,
+		VkDevice device,
+		VkQueue graphicsQueue);
 }
 #endif

@@ -14,6 +14,7 @@ struct Vertex
 	static VkVertexInputBindingDescription GetBindingDescription();
 	static std::array<VkVertexInputAttributeDescription, 2> GetAttributeDescriptions();
 	static std::vector<Vertex> GetSampleVertexMatrix();
+	static std::vector<uint16_t> GetSampleVertexIndices();
 };
 
 #endif
