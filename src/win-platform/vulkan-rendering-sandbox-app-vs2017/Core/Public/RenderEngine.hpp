@@ -1,5 +1,18 @@
 #pragma once
 
+#ifndef _RENDER_ENGINE_HPP_
+#define	_RENDER_ENGINE_HPP_
+
+#include <chrono>
+#include <vector>
+#include "Infrastructure/Extensions/QueueFamilyIndices.hpp"
+#include <iostream>
+#include "Utils/GraphUtils.hpp"
+#include "Infrastructure/Extensions/SwapChainSupportDetails.hpp"
+#include "Utils/IOUtils.hpp"
+#include <set>
+#include <map>
+
 namespace VulkanCore
 {
 	 class RenderEngine
@@ -125,3 +138,5 @@ namespace VulkanCore
 		 return VK_FALSE;
 	 }
 }
+
+#endif

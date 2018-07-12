@@ -1,5 +1,10 @@
 #pragma once
 
+#ifndef _END_POINT_APP_HPP_
+#define	_END_POINT_APP_HPP_
+
+#include "RenderEngine.hpp"
+
 namespace VulkanCore
 {
 	class EndPointApplication
@@ -32,3 +37,5 @@ namespace VulkanCore
 		app->VkEngine->FrameBufferResized = true;
 	}
 }
+
+#endif

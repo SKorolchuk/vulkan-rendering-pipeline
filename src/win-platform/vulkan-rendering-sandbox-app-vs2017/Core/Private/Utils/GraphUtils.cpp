@@ -1,4 +1,4 @@
-#include <stdafx.h>
+#include "../../Public/Utils/GraphUtils.hpp"
 
 std::array<VkVertexInputAttributeDescription, 2> Vertex::GetAttributeDescriptions()
 {
@@ -29,9 +29,11 @@ VkVertexInputBindingDescription Vertex::GetBindingDescription()
 
 std::vector<Vertex> Vertex::GetSampleVertexMatrix()
 {
-	return {
+	std::vector<Vertex> sampleVertexMatrix = {
 		{ { 0.0f, -0.5f },{ 1.0f, 0.0f, 0.0f } },
 	{ { 0.5f, 0.5f },{ 0.0f, 1.0f, 0.0f } },
 	{ { -0.5f, 0.5f },{ 0.0f, 0.0f, 1.0f } },
 	{ { 0.5f, 0.0f },{ 0.0f, 0.0f, 1.0f } } };
+
+	return sampleVertexMatrix;
 }

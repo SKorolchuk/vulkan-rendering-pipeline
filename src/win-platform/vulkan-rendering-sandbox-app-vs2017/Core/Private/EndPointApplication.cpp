@@ -1,4 +1,4 @@
-#include <stdafx.h>
+#include "../Public/EndPointApplication.hpp"
 
 VulkanCore::EndPointApplication::EndPointApplication() :
 	width(1280),
@@ -39,7 +39,7 @@ void VulkanCore::EndPointApplication::OpenWindow()
 
 	this->window = glfwCreateWindow(this->width, this->height, this->title.c_str(), nullptr, nullptr);
 	glfwSetWindowUserPointer(this->window, this);
-	glfwSetFramebufferSizeCallback(this->window, VulkanCore::FramebufferResizeCallback);
+	glfwSetFramebufferSizeCallback(this->window, FramebufferResizeCallback);
 
 	this->VkEngine = new RenderEngine(this->width, this->height, this->window);
 }

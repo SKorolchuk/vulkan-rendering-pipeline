@@ -1,4 +1,4 @@
-#include <stdafx.h>
+#include "../Public/RenderEngine.hpp"
 
 VulkanCore::RenderEngine::RenderEngine(int width, int height, GLFWwindow* window) :
 	ViewportWidth(width),

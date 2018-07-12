@@ -1,4 +1,4 @@
-#include <stdafx.h>
+#include "../../Public/Utils/IOUtils.hpp"
 
 std::vector<char> ShaderExtensions::ReadShaderFile(const std::string& shaderFileName)
 {

@@ -16,12 +16,6 @@
     <Filter Include="Private\App">
       <UniqueIdentifier>{8dde491f-0948-46ab-9543-2c2e1769d02d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Public\VkExtensions">
-      <UniqueIdentifier>{1085bbf1-1250-4ded-97e0-d6c13c9e6917}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Private\VkExtensions">
-      <UniqueIdentifier>{19a9c2f4-6877-4dd0-bacf-4b217931c49a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Private\Utils">
       <UniqueIdentifier>{2917bc55-f102-4b05-9156-776c1acbcb3b}</UniqueIdentifier>
     </Filter>
@@ -31,48 +25,45 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{350f50a4-b044-4663-913e-f4e88a13987d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Private\Infrastructure">
+      <UniqueIdentifier>{9e2e2e9b-cec9-4a8c-91d7-8f0c032d6e91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Infrastructure">
+      <UniqueIdentifier>{799379b0-da55-468a-824d-7e062e46c723}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Infrastructure\VkExtensions">
+      <UniqueIdentifier>{1085bbf1-1250-4ded-97e0-d6c13c9e6917}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Infrastructure\VkExtensions">
+      <UniqueIdentifier>{19a9c2f4-6877-4dd0-bacf-4b217931c49a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>Entry</Filter>
-    </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>Entry</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\QueueFamilyIndices.hpp">
-      <Filter>Public\VkExtensions</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\SwapChainSupportDetails.hpp">
-      <Filter>Public\VkExtensions</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\IOUtils.hpp">
-      <Filter>Public\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="Public\EndPointApplication.hpp">
       <Filter>Public\App</Filter>
     </ClInclude>
     <ClInclude Include="Public\RenderEngine.hpp">
       <Filter>Public\App</Filter>
     </ClInclude>
-    <ClInclude Include="Public\GraphUtils.hpp">
+    <ClInclude Include="Public\Infrastructure\Extensions\QueueFamilyIndices.hpp">
+      <Filter>Public\Infrastructure\VkExtensions</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Infrastructure\Extensions\SwapChainSupportDetails.hpp">
+      <Filter>Public\Infrastructure\VkExtensions</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Utils\GraphUtils.hpp">
+      <Filter>Public\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Utils\IOUtils.hpp">
+      <Filter>Public\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Utils\MemoryUtils.hpp">
       <Filter>Public\Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Entry</Filter>
-    </ClCompile>
-    <ClCompile Include="Private\SwapChainSupportDetails.cpp">
-      <Filter>Private\VkExtensions</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Entry</Filter>
-    </ClCompile>
-    <ClCompile Include="Private\QueueFamilyIndices.cpp">
-      <Filter>Private\VkExtensions</Filter>
-    </ClCompile>
-    <ClCompile Include="Private\IOUtils.cpp">
-      <Filter>Private\Utils</Filter>
     </ClCompile>
     <ClCompile Include="Private\EndPointApplication.cpp">
       <Filter>Private\App</Filter>
@@ -80,7 +71,19 @@
     <ClCompile Include="Private\RenderEngine.cpp">
       <Filter>Private\App</Filter>
     </ClCompile>
-    <ClCompile Include="Private\GraphUtils.cpp">
+    <ClCompile Include="Private\Infrastructure\Extensions\QueueFamilyIndices.cpp">
+      <Filter>Private\Infrastructure\VkExtensions</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\Infrastructure\Extensions\SwapChainSupportDetails.cpp">
+      <Filter>Private\Infrastructure\VkExtensions</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\Utils\GraphUtils.cpp">
+      <Filter>Private\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\Utils\IOUtils.cpp">
+      <Filter>Private\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\Utils\MemoryUtils.cpp">
       <Filter>Private\Utils</Filter>
     </ClCompile>
   </ItemGroup>

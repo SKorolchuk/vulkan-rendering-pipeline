@@ -1,4 +1,4 @@
-﻿#include <stdafx.h>
+﻿#include "../../../Public/Infrastructure/Extensions/SwapChainSupportDetails.hpp"
 
 SwapChainSupportDetails QuerySwapChainSupport(
 	VkPhysicalDevice device,

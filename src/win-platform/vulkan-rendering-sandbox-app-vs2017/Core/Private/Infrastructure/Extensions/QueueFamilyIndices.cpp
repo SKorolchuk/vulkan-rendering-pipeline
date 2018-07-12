@@ -1,4 +1,4 @@
-#include <stdafx.h>
+#include "../../../Public/Infrastructure/Extensions/QueueFamilyIndices.hpp"
 
 bool QueueFamilyIndices::IsComplete() const
 {
