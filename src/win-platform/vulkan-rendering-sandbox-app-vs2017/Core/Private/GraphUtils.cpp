@@ -27,10 +27,11 @@ VkVertexInputBindingDescription Vertex::GetBindingDescription()
 	return bindDescription;
 }
 
-static std::vector<Vertex> GetSampleVertexMatrix()
+std::vector<Vertex> Vertex::GetSampleVertexMatrix()
 {
 	return {
-		{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-		{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-		{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}};
+		{ { 0.0f, -0.5f },{ 1.0f, 0.0f, 0.0f } },
+	{ { 0.5f, 0.5f },{ 0.0f, 1.0f, 0.0f } },
+	{ { -0.5f, 0.5f },{ 0.0f, 0.0f, 1.0f } },
+	{ { 0.5f, 0.0f },{ 0.0f, 0.0f, 1.0f } } };
 }

@@ -53,6 +53,8 @@ namespace VulkanCore
 		 bool IsDeviceSuitable(VkPhysicalDevice device);
 		 bool CheckDeviceExtensionsSupport(VkPhysicalDevice device);
 		 void CreateRenderPass();
+		 void CreateVertexBuffer();
+		 uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		 static int RateDeviceSuitability(VkPhysicalDevice device);
 		 QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device) const;
 		 VkInstance vkInstance;
@@ -73,6 +75,9 @@ namespace VulkanCore
 		 VkRenderPass vkRenderPass;
 		 VkPipelineLayout vkPipelineLayout;
 		 VkPipeline vkGraphicsPipeline;
+
+		 VkBuffer vkVertexBuffer;
+		 VkDeviceMemory vkVertexBufferMemory;
 
 		 // semaphores
 

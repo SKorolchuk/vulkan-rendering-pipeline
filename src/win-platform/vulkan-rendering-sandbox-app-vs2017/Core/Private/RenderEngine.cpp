@@ -37,6 +37,7 @@ void VulkanCore::RenderEngine::BootstrapPipeline()
 	this->CreateGraphicsPipeline();
 	this->CreateFrameBuffers();
 	this->CreateCommandPool();
+	this->CreateVertexBuffer();
 	this->CreateCommandBuffers();
 	this->CreatePipelineSyncObjects();
 
@@ -49,6 +50,9 @@ void VulkanCore::RenderEngine::CleanPipeline()
 		return;
 
 	this->CleanSwapChain();
+
+	vkDestroyBuffer(this->vkDevice, this->vkVertexBuffer, nullptr);
+	vkFreeMemory(this->vkDevice, this->vkVertexBufferMemory, nullptr);
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
 	{
@@ -236,7 +240,11 @@ void VulkanCore::RenderEngine::CreateCommandBuffers()
 
 		vkCmdBindPipeline(this->vkCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, this->vkGraphicsPipeline);
 
-		vkCmdDraw(this->vkCommandBuffers[i], 3, 1, 0, 0);
+		VkBuffer vertexBuffers[] = { this->vkVertexBuffer };
+		VkDeviceSize offsets[] = { 0 };
+		vkCmdBindVertexBuffers(this->vkCommandBuffers[i], 0, 1, vertexBuffers, offsets);
+
+		vkCmdDraw(this->vkCommandBuffers[i], static_cast<uint32_t>(Vertex::GetSampleVertexMatrix().size()), 1, 0, 0);
 
 		vkCmdEndRenderPass(this->vkCommandBuffers[i]);
 
@@ -795,6 +803,56 @@ void VulkanCore::RenderEngine::CreateRenderPass()
 	}
 }
 
+void VulkanCore::RenderEngine::CreateVertexBuffer()
+{
+	std::vector<Vertex> vertices = Vertex::GetSampleVertexMatrix();
+
+	VkBufferCreateInfo bufferInfo = {};
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size = sizeof(vertices[0]) * vertices.size();
+	bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	if (vkCreateBuffer(this->vkDevice, &bufferInfo, nullptr, &this->vkVertexBuffer) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create vertex buffer!");
+	}
+
+	VkMemoryRequirements memRequirements;
+	vkGetBufferMemoryRequirements(this->vkDevice, this->vkVertexBuffer, &memRequirements);
+
+	VkMemoryAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.allocationSize = memRequirements.size;
+	allocInfo.memoryTypeIndex = this->FindMemoryType(
+		memRequirements.memoryTypeBits,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+	);
+
+	if (vkAllocateMemory(this->vkDevice, &allocInfo, nullptr, &this->vkVertexBufferMemory) != VK_SUCCESS) {
+		throw std::runtime_error("failed to allocate vertex buffer memory!");
+	}
+
+	vkBindBufferMemory(this->vkDevice, this->vkVertexBuffer, this->vkVertexBufferMemory, 0);
+
+	void* data;
+	vkMapMemory(this->vkDevice, this->vkVertexBufferMemory, 0, bufferInfo.size, 0, &data);
+	memcpy(data, vertices.data(), (size_t)bufferInfo.size);
+	vkUnmapMemory(this->vkDevice, this->vkVertexBufferMemory);
+}
+
+uint32_t VulkanCore::RenderEngine::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+	VkPhysicalDeviceMemoryProperties memProperties;
+	vkGetPhysicalDeviceMemoryProperties(this->vkPhysicalDevice, &memProperties);
+
+	for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+		if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+			return i;
+		}
+	}
+
+	throw std::runtime_error("failed to find suitable memory type!");
+}
+
 void VulkanCore::RenderEngine::CreateVulkanInstance()
 {
 	VkApplicationInfo appInfo = {};
@@ -941,5 +999,5 @@ bool VulkanCore::RenderEngine::ThrottleCheck()
 
 	double dilation = std::chrono::duration<double, std::milli>(currentTime - this->lastDrawTime).count();
 
-	return dilation < 1000/60;
+	return dilation < 1000/30;
 }
