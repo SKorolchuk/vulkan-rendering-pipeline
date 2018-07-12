@@ -7,6 +7,7 @@
 #include <vector>
 #include "Infrastructure/Extensions/QueueFamilyIndices.hpp"
 #include <iostream>
+#include "Utils/MemoryUtils.hpp"
 #include "Utils/GraphUtils.hpp"
 #include "Infrastructure/Extensions/SwapChainSupportDetails.hpp"
 #include "Utils/IOUtils.hpp"
@@ -32,7 +33,7 @@ namespace VulkanCore
 		 int ViewportHeight;
 		 GLFWwindow *GLWindow = nullptr;
 		 bool IsPipelineInitialized = false;
-		 bool CheckVkValidationLayerSupport();
+		 bool CheckVkValidationLayerSupport() const;
 		 VkResult CreateVkInstanceWithCheck(
 			 const VkInstanceCreateInfo* pCreateInfo,
 			 const VkAllocationCallbacks* pAllocator,
@@ -43,12 +44,12 @@ namespace VulkanCore
 			 const VkAllocationCallbacks* pAllocator,
 			 VkDebugReportCallbackEXT* pCallback
 		 );
-		 void DestroyVkDebugReportCallback(
+		 static void DestroyVkDebugReportCallback(
 			 VkInstance instance,
 			 VkDebugReportCallbackEXT callback,
 			 const VkAllocationCallbacks* pAllocator);
-		 std::vector<const char*> GetRequiredExtensions();
-		 bool ThrottleCheck();
+		 std::vector<const char*> GetRequiredExtensions() const;
+		 bool ThrottleCheck() const;
 		 void CreateVulkanInstance();
 		 void SetupDebugCallback();
 		 void CreateLogicalDevice();
@@ -63,11 +64,10 @@ namespace VulkanCore
 		 void CreatePipelineSyncObjects();
 		 void CleanSwapChain();
 		 void UpdateSwapChain();
-		 bool IsDeviceSuitable(VkPhysicalDevice device);
-		 bool CheckDeviceExtensionsSupport(VkPhysicalDevice device);
+		 bool IsDeviceSuitable(VkPhysicalDevice device) const;
+		 bool CheckDeviceExtensionsSupport(VkPhysicalDevice device) const;
 		 void CreateRenderPass();
 		 void CreateVertexBuffer();
-		 uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		 static int RateDeviceSuitability(VkPhysicalDevice device);
 		 QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device) const;
 		 VkInstance vkInstance;

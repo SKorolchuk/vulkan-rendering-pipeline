@@ -76,29 +76,27 @@ void VulkanCore::RenderEngine::CleanPipeline()
 
 void VulkanCore::RenderEngine::Draw()
 {
-	/*if (this->ThrottleCheck())
+	if (this->ThrottleCheck())
 	{
 		return;
 	}
-	else
-	{
-		this->lastDrawTime = 
-			std::chrono::time_point_cast<std::chrono::milliseconds>(
-				std::chrono::system_clock::now()
-			);
-	} */ 
+
+	this->lastDrawTime = 
+		std::chrono::time_point_cast<std::chrono::milliseconds>(
+			std::chrono::system_clock::now()
+		);
 
 	vkWaitForFences(this->vkDevice, 1, &this->vkInFlightSyncFences[this->currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
 	vkResetFences(this->vkDevice, 1, &this->vkInFlightSyncFences[this->currentFrame]);
 
 	uint32_t imageIndex;
 
-	VkResult result = vkAcquireNextImageKHR(
+	const VkResult result = vkAcquireNextImageKHR(
 		this->vkDevice,
 		this->vkSwapChain,
 		std::numeric_limits<uint64_t>::max(),
 		this->vkImageAvailableSemLocks[this->currentFrame],
-		VK_NULL_HANDLE,
+		nullptr,
 		&imageIndex);
 
 	VkSubmitInfo submitInfo = {};
@@ -186,7 +184,7 @@ void VulkanCore::RenderEngine::CreateFrameBuffers()
 
 void VulkanCore::RenderEngine::CreateCommandPool()
 {
-	QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(this->vkPhysicalDevice);
+	const QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(this->vkPhysicalDevice);
 
 	VkCommandPoolCreateInfo poolCreateInfo = {};
 
@@ -374,7 +372,7 @@ void VulkanCore::RenderEngine::CreateSwapChain()
 	createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	createInfo.presentMode = presentMode;
 	createInfo.clipped = VK_TRUE;
-	createInfo.oldSwapchain = VK_NULL_HANDLE;
+	createInfo.oldSwapchain = nullptr;
 
 	if (vkCreateSwapchainKHR(this->vkDevice, &createInfo, nullptr, &this->vkSwapChain) != VK_SUCCESS)
 	{
@@ -458,8 +456,8 @@ void VulkanCore::RenderEngine::CreateImageViews()
 
 void VulkanCore::RenderEngine::CreateGraphicsPipeline()
 {
-	std::vector<char> vertrexShaderText = ShaderExtensions::ReadShaderFile("../Shaders/test_vertrex_shader.vert");
-	std::vector<char> fragmentShaderText = ShaderExtensions::ReadShaderFile("../Shaders/test_fragment_shader.frag");
+	const std::vector<char> vertrexShaderText = ShaderExtensions::ReadShaderFile("../Shaders/test_vertrex_shader.vert");
+	const std::vector<char> fragmentShaderText = ShaderExtensions::ReadShaderFile("../Shaders/test_fragment_shader.frag");
 
 	this->vkVertrexShader = ShaderExtensions::CreateShaderModule(this->vkDevice, vertrexShaderText);
 	this->vkFragmentShader = ShaderExtensions::CreateShaderModule(this->vkDevice, fragmentShaderText);
@@ -579,7 +577,7 @@ void VulkanCore::RenderEngine::CreateGraphicsPipeline()
 
 void VulkanCore::RenderEngine::CreateLogicalDevice()
 {
-	QueueFamilyIndices indices = this->FindQueueFamilies(this->vkPhysicalDevice);
+	const QueueFamilyIndices indices = this->FindQueueFamilies(this->vkPhysicalDevice);
 
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 	std::set<int> uniqueQueueFamilies = { indices.graphicsFamily, indices.presentFamily };
@@ -709,7 +707,8 @@ int VulkanCore::RenderEngine::RateDeviceSuitability(VkPhysicalDevice device) {
 	return score;
 }
 
-bool VulkanCore::RenderEngine::IsDeviceSuitable(VkPhysicalDevice device) {
+bool VulkanCore::RenderEngine::IsDeviceSuitable(VkPhysicalDevice device) const
+{
 	VkPhysicalDeviceProperties deviceProperties;
 	VkPhysicalDeviceFeatures deviceFeatures;
 	vkGetPhysicalDeviceProperties(device, &deviceProperties);
@@ -735,7 +734,7 @@ bool VulkanCore::RenderEngine::IsDeviceSuitable(VkPhysicalDevice device) {
 		&& swapChainValidationResult;
 }
 
-bool VulkanCore::RenderEngine::CheckDeviceExtensionsSupport(VkPhysicalDevice device)
+bool VulkanCore::RenderEngine::CheckDeviceExtensionsSupport(VkPhysicalDevice device) const
 {
 	uint32_t extensionCount;
 
@@ -807,50 +806,21 @@ void VulkanCore::RenderEngine::CreateVertexBuffer()
 {
 	std::vector<Vertex> vertices = Vertex::GetSampleVertexMatrix();
 
-	VkBufferCreateInfo bufferInfo = {};
-	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferInfo.size = sizeof(vertices[0]) * vertices.size();
-	bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	const VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
-	if (vkCreateBuffer(this->vkDevice, &bufferInfo, nullptr, &this->vkVertexBuffer) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create vertex buffer!");
-	}
-
-	VkMemoryRequirements memRequirements;
-	vkGetBufferMemoryRequirements(this->vkDevice, this->vkVertexBuffer, &memRequirements);
-
-	VkMemoryAllocateInfo allocInfo = {};
-	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	allocInfo.allocationSize = memRequirements.size;
-	allocInfo.memoryTypeIndex = this->FindMemoryType(
-		memRequirements.memoryTypeBits,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-	);
-
-	if (vkAllocateMemory(this->vkDevice, &allocInfo, nullptr, &this->vkVertexBufferMemory) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate vertex buffer memory!");
-	}
-
-	vkBindBufferMemory(this->vkDevice, this->vkVertexBuffer, this->vkVertexBufferMemory, 0);
+	MemoryUtils::CreateBuffer(
+		bufferSize,
+		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		this->vkDevice,
+		this->vkPhysicalDevice,
+		this->vkVertexBuffer,
+		this->vkVertexBufferMemory);
 
 	void* data;
-	vkMapMemory(this->vkDevice, this->vkVertexBufferMemory, 0, bufferInfo.size, 0, &data);
-	memcpy(data, vertices.data(), (size_t)bufferInfo.size);
+	vkMapMemory(this->vkDevice, this->vkVertexBufferMemory, 0, bufferSize, 0, &data);
+	memcpy(data, vertices.data(), static_cast<size_t>(bufferSize));
 	vkUnmapMemory(this->vkDevice, this->vkVertexBufferMemory);
-}
-
-uint32_t VulkanCore::RenderEngine::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
-	VkPhysicalDeviceMemoryProperties memProperties;
-	vkGetPhysicalDeviceMemoryProperties(this->vkPhysicalDevice, &memProperties);
-
-	for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-		if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-			return i;
-		}
-	}
-
-	throw std::runtime_error("failed to find suitable memory type!");
 }
 
 void VulkanCore::RenderEngine::CreateVulkanInstance()
@@ -925,7 +895,8 @@ VkResult VulkanCore::RenderEngine::CreateVkDebugReportCallback(
 	const VkAllocationCallbacks* pAllocator,
 	VkDebugReportCallbackEXT* pCallback)
 {
-	auto func = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT");
+	const auto func = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vkGetInstanceProcAddr(
+		instance, "vkCreateDebugReportCallbackEXT"));
 
 	if (func != nullptr)
 	{
@@ -942,7 +913,8 @@ void VulkanCore::RenderEngine::DestroyVkDebugReportCallback(
 	VkDebugReportCallbackEXT callback,
 	const VkAllocationCallbacks* pAllocator)
 {
-	auto func = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
+	const auto func = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vkGetInstanceProcAddr(
+		instance, "vkDestroyDebugReportCallbackEXT"));
 
 	if (func != nullptr)
 	{
@@ -950,7 +922,7 @@ void VulkanCore::RenderEngine::DestroyVkDebugReportCallback(
 	}
 }
 
-bool VulkanCore::RenderEngine::CheckVkValidationLayerSupport()
+bool VulkanCore::RenderEngine::CheckVkValidationLayerSupport() const
 {
 	uint32_t layerCount;
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -976,12 +948,11 @@ bool VulkanCore::RenderEngine::CheckVkValidationLayerSupport()
 	return true;
 }
 
-std::vector<const char*> VulkanCore::RenderEngine::GetRequiredExtensions()
+std::vector<const char*> VulkanCore::RenderEngine::GetRequiredExtensions() const
 {
 	uint32_t glfwExtensionCount = 0;
-	const char **glfwExtensions;
 
-	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+	const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
 	std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
@@ -993,11 +964,11 @@ std::vector<const char*> VulkanCore::RenderEngine::GetRequiredExtensions()
 	return extensions;
 }
 
-bool VulkanCore::RenderEngine::ThrottleCheck()
+bool VulkanCore::RenderEngine::ThrottleCheck() const
 {
-	auto currentTime = std::chrono::system_clock::now();
+	const auto currentTime = std::chrono::system_clock::now();
 
-	double dilation = std::chrono::duration<double, std::milli>(currentTime - this->lastDrawTime).count();
+	const double dilation = std::chrono::duration<double, std::milli>(currentTime - this->lastDrawTime).count();
 
-	return dilation < 1000/30;
+	return dilation < 1000/60;
 }

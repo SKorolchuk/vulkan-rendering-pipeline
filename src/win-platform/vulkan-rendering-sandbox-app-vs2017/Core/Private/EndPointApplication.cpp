@@ -77,5 +77,3 @@ void VulkanCore::EndPointApplication::Clean()
 	glfwDestroyWindow(this->window);
 	glfwTerminate();
 }
-
-
