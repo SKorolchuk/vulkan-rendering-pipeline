@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef _IO_UTILS_HPP_
 #define	_IO_UTILS_HPP_
 

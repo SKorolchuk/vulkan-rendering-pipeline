@@ -1,6 +1,4 @@
-﻿#pragma once
-
-#ifndef _SWAP_CHAIN_SUPPORT_DETAILS_HPP_
+﻿#ifndef _SWAP_CHAIN_SUPPORT_DETAILS_HPP_
 #define	_SWAP_CHAIN_SUPPORT_DETAILS_HPP_
 
 #include <vulkan/vulkan.h>

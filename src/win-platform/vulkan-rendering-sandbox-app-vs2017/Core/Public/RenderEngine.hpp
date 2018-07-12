@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef _RENDER_ENGINE_HPP_
 #define	_RENDER_ENGINE_HPP_
 

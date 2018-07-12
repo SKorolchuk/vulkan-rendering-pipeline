@@ -1,10 +1,8 @@
-#pragma once
-
 #ifndef _MEMORY_UTILS_HPP_
 #define	_MEMORY_UTILS_HPP_
 
 #include <vulkan/vulkan.h>
-#include <stdexcept>
+#include <vector>
 
 namespace MemoryUtils
 {
@@ -21,5 +19,13 @@ namespace MemoryUtils
 		uint32_t typeFilter,
 		VkMemoryPropertyFlags properties,
 		VkPhysicalDevice& physicalDevice);
+
+	void CopyBuffer(
+		VkBuffer srcBuffer,
+		VkBuffer dstBuffer,
+		VkDeviceSize size,
+		VkCommandPool& commandPool,
+		VkDevice& device,
+		VkQueue& graphicsQueue);
 }
 #endif

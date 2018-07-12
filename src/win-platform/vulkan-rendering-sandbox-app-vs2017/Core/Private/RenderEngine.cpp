@@ -808,19 +808,43 @@ void VulkanCore::RenderEngine::CreateVertexBuffer()
 
 	const VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
+
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+
 	MemoryUtils::CreateBuffer(
 		bufferSize,
-		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		this->vkDevice,
+		this->vkPhysicalDevice,
+		stagingBuffer,
+		stagingBufferMemory);
+
+	void* data;
+	vkMapMemory(this->vkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+	memcpy(data, vertices.data(), static_cast<size_t>(bufferSize));
+	vkUnmapMemory(this->vkDevice, stagingBufferMemory);
+
+	MemoryUtils::CreateBuffer(
+		bufferSize,
+		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		this->vkDevice,
 		this->vkPhysicalDevice,
 		this->vkVertexBuffer,
 		this->vkVertexBufferMemory);
 
-	void* data;
-	vkMapMemory(this->vkDevice, this->vkVertexBufferMemory, 0, bufferSize, 0, &data);
-	memcpy(data, vertices.data(), static_cast<size_t>(bufferSize));
-	vkUnmapMemory(this->vkDevice, this->vkVertexBufferMemory);
+	MemoryUtils::CopyBuffer(
+		stagingBuffer,
+		this->vkVertexBuffer,
+		bufferSize,
+		this->vkCommandPool,
+		this->vkDevice,
+		this->vkGraphicsQueue);
+
+	vkDestroyBuffer(this->vkDevice, stagingBuffer, nullptr);
+	vkFreeMemory(this->vkDevice, stagingBufferMemory, nullptr);
 }
 
 void VulkanCore::RenderEngine::CreateVulkanInstance()

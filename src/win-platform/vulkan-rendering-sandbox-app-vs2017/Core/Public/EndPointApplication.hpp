@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef _END_POINT_APP_HPP_
 #define	_END_POINT_APP_HPP_
 

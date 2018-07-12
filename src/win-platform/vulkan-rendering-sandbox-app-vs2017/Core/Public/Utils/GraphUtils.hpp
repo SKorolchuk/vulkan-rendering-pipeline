@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef _GRAPH_UTILS_HPP_
 #define	_GRAPH_UTILS_HPP_
 
