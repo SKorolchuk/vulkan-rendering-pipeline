@@ -55,6 +55,7 @@ namespace VulkanCore
 		 void PickPhysicalDevice();
 		 void CreateSurface();
 		 void CreateImageViews();
+		 void CreateDescriptorSetLayout();
 		 void CreateGraphicsPipeline();
 		 void CreateFrameBuffers();
 		 void CreateCommandPool();
@@ -62,11 +63,15 @@ namespace VulkanCore
 		 void CreatePipelineSyncObjects();
 		 void CleanSwapChain();
 		 void UpdateSwapChain();
+		 void CreateDescriptorSet();
 		 bool IsDeviceSuitable(VkPhysicalDevice device) const;
 		 bool CheckDeviceExtensionsSupport(VkPhysicalDevice device) const;
 		 void CreateRenderPass();
 		 void CreateVertexBuffer();
 		 void CreateIndexBuffer();
+		 void CreateDescriptorPool();
+		 void CreateUniformBuffer();
+		 void UpdateUniformBuffer(uint32_t ImageIndex);
 		 static int RateDeviceSuitability(VkPhysicalDevice device);
 		 QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device) const;
 		 VkInstance vkInstance;
@@ -85,13 +90,22 @@ namespace VulkanCore
 		 VkColorSpaceKHR vkSwapChainImageColorSpace;
 
 		 VkRenderPass vkRenderPass;
+		 VkDescriptorSetLayout vkDescriptorSetLayout;
+		 VkDescriptorPool vkDescriptorPool;
+		 std::vector<VkDescriptorSet> vkDescriptorSets;
+
 		 VkPipelineLayout vkPipelineLayout;
 		 VkPipeline vkGraphicsPipeline;
+
+		 // buffers
 
 		 VkBuffer vkVertexBuffer;
 		 VkDeviceMemory vkVertexBufferMemory;
 		 VkBuffer vkIndexBuffer;
 		 VkDeviceMemory vkIndexBufferMemory;
+
+		 std::vector<VkBuffer> vkUniformBuffers;
+		 std::vector<VkDeviceMemory> vkUniformBuffersMemory;
 
 		 // semaphores
 
