@@ -2,10 +2,10 @@
 #extension GL_ARB_separate_shader_objects : enable
 
 layout(location = 0) in vec3 fragColor;
+layout(location = 1) in mat4 resultMat;
 
 layout(location = 0) out vec4 outColor;
 
-uniform float time;
 uniform vec2 mouse;
 uniform vec2 resolution;
 
@@ -25,9 +25,9 @@ float worley( vec2 p, float timeSpeed )
 			
 			float f1 = random( test_cell );
 			float f2 = random( test_cell + vec2(1.0,81.0) );
-			
-			float xp = mix( f1, f2, sin(time*timeSpeed) );
-			float yp = mix( f1, f2, cos(time*timeSpeed) );
+			float diff = resultMat[1][2];
+			float xp = mix( f1, f2, sin(diff*timeSpeed) );
+			float yp = mix( f1, f2, cos(diff*timeSpeed) );
 			
 			vec2 c = test_cell + vec2(xp,yp);
 			
@@ -70,8 +70,8 @@ void main() {
 	float t = worley2( gl_FragCoord.xy / 1.6 );
 	vec3 finalColor = vec3( 0,0,0);
 	
-	t = pass( uv/2.0, 100.5 );     
+	t = pass( uv/2.0, 0.5 );     
 	finalColor += vec3(sqrt(t*12.0), sqrt(t*25.0), sqrt(t * 10.0) );
-
+ 
     outColor = vec4(finalColor, 0.2);
 }   
