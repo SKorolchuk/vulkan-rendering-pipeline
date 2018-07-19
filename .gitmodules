@@ -7,3 +7,15 @@
 [submodule "src/modules/opencv"]
 	path = src/modules/opencv
 	url = https://github.com/SKorolchuk/opencv.git
+[submodule "src/modules/stb"]
+	path = src/modules/stb
+	url = https://github.com/SKorolchuk/stb.git
+[submodule "src/modules/gli"]
+	path = src/modules/gli
+	url = https://github.com/SKorolchuk/gli.git
+[submodule "src/modules/tinugltf"]
+	path = src/modules/tinugltf
+	url = https://github.com/SKorolchuk/tinygltf.git
+[submodule "src/modules/json"]
+	path = src/modules/json
+	url = https://github.com/SKorolchuk/json.git
