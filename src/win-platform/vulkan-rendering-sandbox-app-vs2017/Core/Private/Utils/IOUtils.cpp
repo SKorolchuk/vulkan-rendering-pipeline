@@ -36,3 +36,16 @@ VkShaderModule ShaderExtensions::CreateShaderModule(const VkDevice& device, cons
 
 	return shaderModule;
 }
+
+stbi_uc* ShaderExtensions::CreateTextureImage(const char* filePath)
+{
+	int textureWidth, textureHeight, textureChannels;
+
+	stbi_uc* pixels = stbi_load(filePath, &textureWidth, &textureHeight, &textureChannels, STBI_rgb_alpha);
+
+	VkDeviceSize imageSize = textureWidth * textureHeight * textureChannels;
+
+	if (!pixels) {
+		throw std::runtime_error("failed to load texture image");
+	}
+}

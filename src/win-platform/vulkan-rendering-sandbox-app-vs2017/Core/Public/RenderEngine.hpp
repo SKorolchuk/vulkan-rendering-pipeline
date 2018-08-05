@@ -55,6 +55,7 @@ namespace VulkanCore
 		 void PickPhysicalDevice();
 		 void CreateSurface();
 		 void CreateImageViews();
+		 void LoadTextures();
 		 void CreateDescriptorSetLayout();
 		 void CreateGraphicsPipeline();
 		 void CreateFrameBuffers();
@@ -118,6 +119,10 @@ namespace VulkanCore
 
 		 VkCommandPool vkCommandPool;
 		 std::vector<VkCommandBuffer> vkCommandBuffers;
+
+		 // Textures
+
+		 stbi_uc* PixelBuffer;
 
 		 const bool enableValidationLayers = true;
 		 const std::vector<const char*> validationLayers = {

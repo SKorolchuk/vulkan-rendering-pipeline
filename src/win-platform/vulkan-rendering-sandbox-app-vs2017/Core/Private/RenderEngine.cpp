@@ -39,6 +39,7 @@ void VulkanCore::RenderEngine::BootstrapPipeline()
 	this->CreateFrameBuffers();
 	this->CreateCommandPool();
 	this->CreateVertexBuffer();
+	this->LoadTextures();
 	this->CreateIndexBuffer();
 	this->CreateUniformBuffer();
 	this->CreateDescriptorPool();
@@ -512,6 +513,35 @@ void VulkanCore::RenderEngine::CreateImageViews()
 			throw std::runtime_error("failed to create image views!");
 		}
 	}
+}
+
+void VulkanCore::RenderEngine::LoadTextures()
+{
+	int textureWidth, textureHeight, textureChannels;
+
+	this->PixelBuffer = ShaderExtensions::CreateTextureImage("../Assets/Textures/Sample-Texture_v1.jpg", &textureWidth, &textureHeight, &textureChannels);
+
+	VkDeviceSize imageSize = textureWidth * textureHeight * 4;
+
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	MemoryUtils::CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, this->vkDevice, this->vkPhysicalDevice, stagingBuffer, stagingBufferMemory);
+
+	void* data;
+	vkMapMemory(this->vkDevice, stagingBufferMemory, 0, imageSize, 0, &data);
+	memcpy(data, this->PixelBuffer, static_cast<size_t>(imageSize));
+	vkUnmapMemory(this->vkDevice, stagingBufferMemory);
+
+	stbi_image_free(this->PixelBuffer);
+
+	createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+
+	transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+	transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+	vkDestroyBuffer(this->vkDevice, stagingBuffer, nullptr);
+	vkFreeMemory(this->vkDevice, stagingBufferMemory, nullptr);
 }
 
 void VulkanCore::RenderEngine::CreateDescriptorSetLayout()
