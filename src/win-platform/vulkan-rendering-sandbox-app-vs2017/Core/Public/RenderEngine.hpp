@@ -64,6 +64,7 @@ namespace VulkanCore
 		 void CreatePipelineSyncObjects();
 		 void CleanSwapChain();
 		 void UpdateSwapChain();
+		 void InitializeSampler();
 		 void CreateDescriptorSet();
 		 bool IsDeviceSuitable(VkPhysicalDevice device) const;
 		 bool CheckDeviceExtensionsSupport(VkPhysicalDevice device) const;
@@ -126,6 +127,7 @@ namespace VulkanCore
 		 VkImage vkTextureImage;
 		 VkDeviceMemory vkTextureImageMemory;
 		 VkImageView vkTextureImageView;
+		 VkSampler vkTextureSampler;
 
 		 const bool enableValidationLayers = true;
 		 const std::vector<const char*> validationLayers = {

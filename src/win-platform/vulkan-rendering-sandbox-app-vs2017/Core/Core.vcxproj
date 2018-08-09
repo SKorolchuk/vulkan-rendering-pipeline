@@ -209,8 +209,9 @@
     <ClCompile Include="Private\Utils\MemoryUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Shaders\test_fragment_shader.frag" />
-    <None Include="..\Shaders\test_vertrex_shader.vert" />
+    <None Include="..\Shaders\base_fragment_shader.frag" />
+    <None Include="..\Shaders\test_animated_fragment_shader.frag" />
+    <None Include="..\Shaders\base_ubo_vertrex_shader.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

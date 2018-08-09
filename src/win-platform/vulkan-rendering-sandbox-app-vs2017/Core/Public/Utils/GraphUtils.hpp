@@ -12,9 +12,10 @@ struct Vertex
 {
 	glm::vec2 position;
 	glm::vec3 color;
+	glm::vec2 textureCoords;
 
 	static VkVertexInputBindingDescription GetBindingDescription();
-	static std::array<VkVertexInputAttributeDescription, 2> GetAttributeDescriptions();
+	static std::array<VkVertexInputAttributeDescription, 3> GetAttributeDescriptions();
 	static std::vector<Vertex> GetSampleVertexMatrix();
 	static std::vector<uint16_t> GetSampleVertexIndices();
 };
