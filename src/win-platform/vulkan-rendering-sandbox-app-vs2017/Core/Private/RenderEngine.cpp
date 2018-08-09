@@ -38,8 +38,9 @@ void VulkanCore::RenderEngine::BootstrapPipeline()
 	this->CreateGraphicsPipeline();
 	this->CreateFrameBuffers();
 	this->CreateCommandPool();
-	this->CreateVertexBuffer();
 	this->LoadTextures();
+	this->CreateTextureViews();
+	this->CreateVertexBuffer();
 	this->CreateIndexBuffer();
 	this->CreateUniformBuffer();
 	this->CreateDescriptorPool();
@@ -519,13 +520,20 @@ void VulkanCore::RenderEngine::LoadTextures()
 {
 	int textureWidth, textureHeight, textureChannels;
 
-	this->PixelBuffer = ShaderExtensions::CreateTextureImage("../Assets/Textures/Sample-Texture_v1.jpg", &textureWidth, &textureHeight, &textureChannels);
+	this->PixelBuffer = ShaderExtensions::CreateTextureImage("../Assets/Textures/Sample-Texture_v1.png", &textureWidth, &textureHeight, &textureChannels);
 
 	VkDeviceSize imageSize = textureWidth * textureHeight * 4;
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
-	MemoryUtils::CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, this->vkDevice, this->vkPhysicalDevice, stagingBuffer, stagingBufferMemory);
+	MemoryUtils::CreateBuffer(
+		imageSize,
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		this->vkDevice,
+		this->vkPhysicalDevice,
+		stagingBuffer,
+		stagingBufferMemory);
 
 	void* data;
 	vkMapMemory(this->vkDevice, stagingBufferMemory, 0, imageSize, 0, &data);
@@ -534,14 +542,50 @@ void VulkanCore::RenderEngine::LoadTextures()
 
 	stbi_image_free(this->PixelBuffer);
 
-	createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+	MemoryUtils::CreateImage(
+		textureWidth,
+		textureHeight,
+		VK_FORMAT_R8G8B8A8_UNORM,
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		this->vkTextureImage,
+		this->vkTextureImageMemory,
+		this->vkDevice,
+		this->vkPhysicalDevice);
 
-	transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-	copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-	transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	MemoryUtils::TransitionImageLayout(
+		this->vkTextureImage,
+		VK_FORMAT_R8G8B8A8_UNORM,
+		VK_IMAGE_LAYOUT_UNDEFINED,
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		this->vkDevice,
+		this->vkCommandPool,
+		this->vkGraphicsQueue);
+	MemoryUtils::CopyBufferToImage(
+		stagingBuffer,
+		this->vkTextureImage,
+		static_cast<uint32_t>(textureWidth),
+		static_cast<uint32_t>(textureHeight),
+		this->vkDevice,
+		this->vkCommandPool,
+		this->vkGraphicsQueue);
+	MemoryUtils::TransitionImageLayout(
+		this->vkTextureImage,
+		VK_FORMAT_R8G8B8A8_UNORM,
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		this->vkDevice,
+		this->vkCommandPool,
+		this->vkGraphicsQueue);
 
 	vkDestroyBuffer(this->vkDevice, stagingBuffer, nullptr);
 	vkFreeMemory(this->vkDevice, stagingBufferMemory, nullptr);
+}
+
+void VulkanCore::RenderEngine::CreateTextureViews()
+{
+	this->vkTextureImageView = GraphicsPipelineUtils::CreateImageView(this->vkTextureImage, VK_FORMAT_R8G8B8A8_UNORM, this->vkDevice);
 }
 
 void VulkanCore::RenderEngine::CreateDescriptorSetLayout()
@@ -566,7 +610,7 @@ void VulkanCore::RenderEngine::CreateDescriptorSetLayout()
 void VulkanCore::RenderEngine::CreateGraphicsPipeline()
 {
 	const std::vector<char> vertrexShaderText = ShaderExtensions::ReadShaderFile("../Shaders/test_vertrex_shader.vert");
-	const std::vector<char> fragmentShaderText = ShaderExtensions::ReadShaderFile("../Shaders/test_fragment_shader.frag");
+	const std::vector<char> fragmentShaderText = ShaderExtensions::ReadShaderFile("../Shaders/base_ubo_vertrex_shader.frag");
 
 	this->vkVertrexShader = ShaderExtensions::CreateShaderModule(this->vkDevice, vertrexShaderText);
 	this->vkFragmentShader = ShaderExtensions::CreateShaderModule(this->vkDevice, fragmentShaderText);

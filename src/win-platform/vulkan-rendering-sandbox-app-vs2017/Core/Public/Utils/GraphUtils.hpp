@@ -26,4 +26,11 @@ struct UniformBufferObject
 	glm::mat4 projection;
 };
 
+struct GraphicsPipelineUtils
+{
+	static VkCommandBuffer BeginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
+	static void EndSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer);
+	static VkImageView CreateImageView(VkImage image, VkFormat format, VkDevice device);
+};
+
 #endif

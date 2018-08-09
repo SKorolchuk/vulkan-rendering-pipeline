@@ -46,4 +46,6 @@ stbi_uc* ShaderExtensions::CreateTextureImage(const char* filePath, int* texture
 	if (!pixels) {
 		throw std::runtime_error("failed to load texture image");
 	}
+
+	return pixels;
 }

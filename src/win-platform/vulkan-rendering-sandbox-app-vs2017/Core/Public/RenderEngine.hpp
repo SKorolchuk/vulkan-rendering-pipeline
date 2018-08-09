@@ -7,7 +7,6 @@
 #include <set>
 #include <map>
 #include "Utils/MemoryUtils.hpp"
-#include "Utils/GraphUtils.hpp"
 #include "Utils/IOUtils.hpp"
 #include "Infrastructure/Extensions/QueueFamilyIndices.hpp"
 #include "Infrastructure/Extensions/SwapChainSupportDetails.hpp"
@@ -56,6 +55,7 @@ namespace VulkanCore
 		 void CreateSurface();
 		 void CreateImageViews();
 		 void LoadTextures();
+		 void CreateTextureViews();
 		 void CreateDescriptorSetLayout();
 		 void CreateGraphicsPipeline();
 		 void CreateFrameBuffers();
@@ -123,6 +123,9 @@ namespace VulkanCore
 		 // Textures
 
 		 stbi_uc* PixelBuffer;
+		 VkImage vkTextureImage;
+		 VkDeviceMemory vkTextureImageMemory;
+		 VkImageView vkTextureImageView;
 
 		 const bool enableValidationLayers = true;
 		 const std::vector<const char*> validationLayers = {

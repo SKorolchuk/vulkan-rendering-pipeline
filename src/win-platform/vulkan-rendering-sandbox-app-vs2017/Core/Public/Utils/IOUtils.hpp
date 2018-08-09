@@ -1,7 +1,6 @@
 #ifndef _IO_UTILS_HPP_
 #define	_IO_UTILS_HPP_
 
-#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 #include <string>
