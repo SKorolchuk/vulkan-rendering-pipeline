@@ -191,21 +191,26 @@ void VulkanCore::RenderEngine::CreateFrameBuffers()
 
 	for (size_t i = 0; i < this->vkSwapChainImageViews.size(); ++i)
 	{
-		VkImageView attachments[] = {
-			this->vkSwapChainImageViews[i]
+		std::array<VkImageView, 2> attachments = {
+			this->vkSwapChainImageViews[i],
+			this->vkDepthImagesView[i]
 		};
 
 		VkFramebufferCreateInfo frameBufferCreateInfo = {};
 
 		frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		frameBufferCreateInfo.renderPass = this->vkRenderPass;
-		frameBufferCreateInfo.attachmentCount = 1;
-		frameBufferCreateInfo.pAttachments = attachments;
+		frameBufferCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+		frameBufferCreateInfo.pAttachments = attachments.data();
 		frameBufferCreateInfo.width = this->vkExtent.width;
 		frameBufferCreateInfo.height = this->vkExtent.height;
 		frameBufferCreateInfo.layers = 1;
 
-		if (vkCreateFramebuffer(this->vkDevice, &frameBufferCreateInfo, nullptr, &this->vkSwapChainFrameBuffers[i]) != VK_SUCCESS)
+		if (vkCreateFramebuffer(
+			this->vkDevice,
+			&frameBufferCreateInfo,
+			nullptr,
+			&this->vkSwapChainFrameBuffers[i]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("Failed to create frame buffer!");
 		}
@@ -260,9 +265,12 @@ void VulkanCore::RenderEngine::CreateCommandBuffers()
 		renderPassInfo.renderArea.offset = { 0, 0 };
 		renderPassInfo.renderArea.extent = this->vkExtent;
 
-		VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
-		renderPassInfo.clearValueCount = 1;
-		renderPassInfo.pClearValues = &clearColor;
+		std::array<VkClearValue, 2> clearValues = {};
+		clearValues[0].color = { 0.7f, 0.76f, 0.8f, 0.95f };
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
+		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		renderPassInfo.pClearValues = clearValues.data();
 
 		vkCmdBeginRenderPass(this->vkCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -270,11 +278,22 @@ void VulkanCore::RenderEngine::CreateCommandBuffers()
 
 		VkBuffer vertexBuffers[] = { this->vkVertexBuffer };
 		VkDeviceSize offsets[] = { 0 };
-		vkCmdBindVertexBuffers(this->vkCommandBuffers[i], 0, 1, vertexBuffers, offsets);
+		vkCmdBindVertexBuffers(
+			this->vkCommandBuffers[i],
+			0, 1,
+			vertexBuffers, offsets);
 
-		vkCmdBindIndexBuffer(this->vkCommandBuffers[i], this->vkIndexBuffer, 0, VK_INDEX_TYPE_UINT16);
+		vkCmdBindIndexBuffer(
+			this->vkCommandBuffers[i],
+			this->vkIndexBuffer,
+			0, VK_INDEX_TYPE_UINT16);
 
-		vkCmdBindDescriptorSets(this->vkCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, this->vkPipelineLayout, 0, 1, &this->vkDescriptorSets[i], 0, nullptr);
+		vkCmdBindDescriptorSets(
+			this->vkCommandBuffers[i],
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			this->vkPipelineLayout,
+			0, 1,
+			&this->vkDescriptorSets[i], 0, nullptr);
 
 		vkCmdDrawIndexed(this->vkCommandBuffers[i], static_cast<uint32_t>(Vertex::GetSampleVertexIndices().size()), 1, 0, 0, 0);
 
@@ -312,6 +331,12 @@ void VulkanCore::RenderEngine::CreatePipelineSyncObjects()
 
 void VulkanCore::RenderEngine::CleanSwapChain()
 {
+	for (size_t i = 0; i < this->vkSwapChainImages.size(); i++) {
+		vkDestroyImageView(this->vkDevice, this->vkDepthImagesView[i], nullptr);
+		vkDestroyImage(this->vkDevice, this->vkDepthImages[i], nullptr);
+		vkFreeMemory(this->vkDevice, this->vkDepthImagesMemory[i], nullptr);
+	}
+
 	for (auto frameBuffer : this->vkSwapChainFrameBuffers)
 	{
 		vkDestroyFramebuffer(this->vkDevice, frameBuffer, nullptr);
@@ -350,6 +375,7 @@ void VulkanCore::RenderEngine::UpdateSwapChain()
 	this->CreateImageViews();
 	this->CreateRenderPass();
 	this->CreateGraphicsPipeline();
+	this->CreateDepthResources();
 	this->CreateFrameBuffers();
 	this->CreateCommandBuffers();
 }
@@ -726,6 +752,19 @@ void VulkanCore::RenderEngine::CreateGraphicsPipeline()
 	multisampling.sampleShadingEnable = VK_FALSE;
 	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
+
+	VkPipelineDepthStencilStateCreateInfo depthStencil = {};
+	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	depthStencil.depthTestEnable = VK_TRUE;
+	depthStencil.depthWriteEnable = VK_TRUE;
+	depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+	depthStencil.depthBoundsTestEnable = VK_FALSE;
+	depthStencil.stencilTestEnable = VK_FALSE;
+	depthStencil.minDepthBounds = 0.0f; // Optional
+	depthStencil.maxDepthBounds = 1.0f; // Optional
+	depthStencil.front = {}; // Optional
+	depthStencil.back = {}; // Optional
+
 	VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
 	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	colorBlendAttachment.blendEnable = VK_FALSE;
@@ -759,13 +798,18 @@ void VulkanCore::RenderEngine::CreateGraphicsPipeline()
 	pipelineInfo.pViewportState = &viewportState;
 	pipelineInfo.pRasterizationState = &rasterizer;
 	pipelineInfo.pMultisampleState = &multisampling;
+	pipelineInfo.pDepthStencilState = &depthStencil;
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.layout = this->vkPipelineLayout;
 	pipelineInfo.renderPass = this->vkRenderPass;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	if (vkCreateGraphicsPipelines(this->vkDevice, nullptr, 1, &pipelineInfo, nullptr, &this->vkGraphicsPipeline) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(
+		this->vkDevice,
+		nullptr,
+		1, &pipelineInfo,
+		nullptr, &this->vkGraphicsPipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 

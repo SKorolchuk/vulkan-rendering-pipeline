@@ -37,6 +37,12 @@
     <Filter Include="Private\Infrastructure\VkExtensions">
       <UniqueIdentifier>{19a9c2f4-6877-4dd0-bacf-4b217931c49a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{57ba08a9-201c-45f8-9c04-b13ea20f1b64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Textures">
+      <UniqueIdentifier>{c6594fa7-477a-460d-ab20-fb1ce4605bcb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\EndPointApplication.hpp">
@@ -97,5 +103,31 @@
     <None Include="..\Shaders\base_fragment_shader.frag">
       <Filter>Shaders</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\Assets\Textures\New_Graph_basecolor.png">
+      <Filter>Assets\Textures</Filter>
+    </Image>
+    <Image Include="..\Assets\Textures\Sample-Texture.jpg">
+      <Filter>Assets\Textures</Filter>
+    </Image>
+    <Image Include="..\Assets\Textures\Sample-Texture_AO.jpg">
+      <Filter>Assets\Textures</Filter>
+    </Image>
+    <Image Include="..\Assets\Textures\Sample-Texture_H.jpg">
+      <Filter>Assets\Textures</Filter>
+    </Image>
+    <Image Include="..\Assets\Textures\Sample-Texture_N.jpg">
+      <Filter>Assets\Textures</Filter>
+    </Image>
+    <Image Include="..\Assets\Textures\Sample-Texture_v1.jpg">
+      <Filter>Assets\Textures</Filter>
+    </Image>
+    <Image Include="..\Assets\Textures\Sample-Texture_v1.png">
+      <Filter>Assets\Textures</Filter>
+    </Image>
+    <Image Include="..\Assets\Textures\Sample-Texture_v2.jpg">
+      <Filter>Assets\Textures</Filter>
+    </Image>
   </ItemGroup>
 </Project>
