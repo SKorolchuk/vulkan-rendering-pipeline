@@ -6,7 +6,7 @@ std::array<VkVertexInputAttributeDescription, 3> Vertex::GetAttributeDescription
 
 	attributeDescriptions[0].binding = 0;
 	attributeDescriptions[0].location = 0;
-	attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+	attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
 	attributeDescriptions[0].offset = offsetof(Vertex, position);
 
 	attributeDescriptions[1].binding = 0;
@@ -35,17 +35,47 @@ VkVertexInputBindingDescription Vertex::GetBindingDescription()
 std::vector<Vertex> Vertex::GetSampleVertexMatrix()
 {
 	return {
-		{ { -1.25f, -1.25f },{ 1.25f, 0.0f, 0.0f }, {1.0f, 0.0f} },
-	{ { 1.25f, -1.25f },{ 0.0f, 1.25f, 0.0f }, { 0.0f, 0.0f } },
-	{ { 1.25f, 1.25f },{ 0.0f, 0.0f, 1.25f }, { 0.0f, 1.0f } },
-	{ { -1.25f, 1.25f },{ 1.25f, 1.25f, 1.25f },{ 1.0f, 1.0f } }
+		// plane 1
+
+		{
+			{ -1.0f, -1.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f }
+		},
+		{
+			{ 1.0f, -1.0f, 0.0f },  { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f }
+		},
+		{
+			{ 1.0f, 1.0f, 0.0f },   { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f }
+		},
+		{
+			{ -1.0f, 1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f }
+		},
+
+		// plane 2
+
+		{
+			{ -1.0f, -1.0f, 1.0f },{ 1.0f, 0.0f, 0.0f },{ 1.0f, 0.0f }
+		},
+		{
+			{ 1.0f, -1.0f, 1.0f },{ 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f }
+		},
+		{
+			{ 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, 1.0f },{ 0.0f, 1.0f }
+		},
+		{
+			{ -1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f }
+		}
 	};
 }
 
 std::vector<uint16_t> Vertex::GetSampleVertexIndices()
 {
 	return {
-		0, 1, 2, 2, 3, 0
+		0, 1, 2, 2, 3, 0,
+		4, 5, 6, 6, 7, 4,
+		0, 4, 1, 1, 5, 4,
+		3, 7, 2, 2, 6, 7,
+		1, 2, 5, 5, 6, 2,
+		0, 3, 4, 4, 7, 3
 	};
 }
 
@@ -93,13 +123,14 @@ void GraphicsPipelineUtils::EndSingleTimeCommands(
 VkImageView GraphicsPipelineUtils::CreateImageView(
 	VkImage image,
 	VkFormat format,
+	VkImageAspectFlags aspectFlags,
 	VkDevice device) {
 	VkImageViewCreateInfo viewInfo = {};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	viewInfo.image = image;
 	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 	viewInfo.format = format;
-	viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	viewInfo.subresourceRange.aspectMask = aspectFlags;
 	viewInfo.subresourceRange.baseMipLevel = 0;
 	viewInfo.subresourceRange.levelCount = 1;
 	viewInfo.subresourceRange.baseArrayLayer = 0;
@@ -111,4 +142,39 @@ VkImageView GraphicsPipelineUtils::CreateImageView(
 	}
 
 	return imageView;
+}
+
+VkFormat GraphicsPipelineUtils::FindSupportedFormat(
+	const std::vector<VkFormat>& candidates,
+	VkImageTiling tiling,
+	VkFormatFeatureFlags features,
+	VkPhysicalDevice physicalDevice) {
+
+	for (VkFormat format : candidates) {
+		VkFormatProperties props;
+		vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
+
+		if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
+			return format;
+		}
+
+		if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+			return format;
+		}
+	}
+
+	throw std::runtime_error("failed to find supported format!");
+}
+
+VkFormat GraphicsPipelineUtils::FindDepthFormat(VkPhysicalDevice physicalDevice) {
+	return FindSupportedFormat(
+		{ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT,
+		physicalDevice
+	);
+}
+
+bool GraphicsPipelineUtils::HasStencilComponent(VkFormat format) {
+	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }

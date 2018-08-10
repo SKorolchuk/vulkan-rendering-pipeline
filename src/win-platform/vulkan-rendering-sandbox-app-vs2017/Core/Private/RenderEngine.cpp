@@ -36,8 +36,9 @@ void VulkanCore::RenderEngine::BootstrapPipeline()
 	this->CreateRenderPass();
 	this->CreateDescriptorSetLayout();
 	this->CreateGraphicsPipeline();
-	this->CreateFrameBuffers();
 	this->CreateCommandPool();
+	this->CreateDepthResources();
+	this->CreateFrameBuffers();
 	this->LoadTextures();
 	this->CreateTextureViews();
 	this->InitializeSampler();
@@ -543,7 +544,8 @@ void VulkanCore::RenderEngine::CreateImageViews()
 		this->vkSwapChainImageViews[i] = GraphicsPipelineUtils::CreateImageView(
 			this->vkSwapChainImages[i],
 			this->vkSwapChainImageFormat,
-			this->vkDevice);		
+			VK_IMAGE_ASPECT_COLOR_BIT,
+			this->vkDevice);
 	}
 }
 
@@ -616,7 +618,11 @@ void VulkanCore::RenderEngine::LoadTextures()
 
 void VulkanCore::RenderEngine::CreateTextureViews()
 {
-	this->vkTextureImageView = GraphicsPipelineUtils::CreateImageView(this->vkTextureImage, VK_FORMAT_R8G8B8A8_UNORM, this->vkDevice);
+	this->vkTextureImageView = GraphicsPipelineUtils::CreateImageView(
+		this->vkTextureImage,
+		VK_FORMAT_R8G8B8A8_UNORM,
+		VK_IMAGE_ASPECT_COLOR_BIT,
+		this->vkDevice);
 }
 
 void VulkanCore::RenderEngine::CreateDescriptorSetLayout()
@@ -960,34 +966,46 @@ void VulkanCore::RenderEngine::CreateRenderPass()
 	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
+	VkAttachmentDescription depthAttachment = {};
+	depthAttachment.format = GraphicsPipelineUtils::FindDepthFormat(this->vkPhysicalDevice);
+	depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
 	VkAttachmentReference colorAttachmentRef = {};
 	colorAttachmentRef.attachment = 0;
 	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+	VkAttachmentReference depthAttachmentRef = {};
+	depthAttachmentRef.attachment = 1;
+	depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
 	VkSubpassDescription subpass = {};
 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-
 	subpass.colorAttachmentCount = 1;
 	subpass.pColorAttachments = &colorAttachmentRef;
-
-	VkRenderPassCreateInfo renderPassInfo = {};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = 1;
-	renderPassInfo.pAttachments = &colorAttachment;
-	renderPassInfo.subpassCount = 1;
-	renderPassInfo.pSubpasses = &subpass;
+	subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
 	VkSubpassDependency dependency = {};
-
 	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 	dependency.dstSubpass = 0;
-
 	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	dependency.srcAccessMask = 0;
-
 	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
+	std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+
+	VkRenderPassCreateInfo renderPassInfo = {};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+	renderPassInfo.pAttachments = attachments.data();
+	renderPassInfo.subpassCount = 1;
+	renderPassInfo.pSubpasses = &subpass;
 	renderPassInfo.dependencyCount = 1;
 	renderPassInfo.pDependencies = &dependency;
 
@@ -1119,6 +1137,45 @@ void VulkanCore::RenderEngine::CreateUniformBuffer()
 			this->vkPhysicalDevice,
 			this->vkUniformBuffers[i],
 			this->vkUniformBuffersMemory[i]);
+	}
+}
+
+void VulkanCore::RenderEngine::CreateDepthResources()
+{
+	VkFormat depthFormat = GraphicsPipelineUtils::FindDepthFormat(this->vkPhysicalDevice);
+
+	this->vkDepthImages.resize(this->vkSwapChainImages.size());
+	this->vkDepthImagesMemory.resize(this->vkSwapChainImages.size());
+	this->vkDepthImagesView.resize(this->vkSwapChainImages.size());
+
+	for (size_t i = 0; i < this->vkSwapChainImages.size(); i++) {
+		MemoryUtils::CreateImage(
+			this->vkExtent.width,
+			this->vkExtent.height,
+			depthFormat,
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			this->vkDepthImages[i],
+			this->vkDepthImagesMemory[i],
+			this->vkDevice,
+			this->vkPhysicalDevice
+		);
+
+		this->vkDepthImagesView[i] = GraphicsPipelineUtils::CreateImageView(
+			this->vkDepthImages[i],
+			depthFormat,
+			VK_IMAGE_ASPECT_DEPTH_BIT,
+			this->vkDevice);
+
+		MemoryUtils::TransitionImageLayout(
+			this->vkDepthImages[i],
+			depthFormat,
+			VK_IMAGE_LAYOUT_UNDEFINED,
+			VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+			this->vkDevice,
+			this->vkCommandPool,
+			this->vkGraphicsQueue);
 	}
 }
 

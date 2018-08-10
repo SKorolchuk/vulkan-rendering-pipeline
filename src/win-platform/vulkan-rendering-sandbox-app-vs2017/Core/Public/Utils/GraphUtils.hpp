@@ -10,7 +10,7 @@
 
 struct Vertex
 {
-	glm::vec2 position;
+	glm::vec3 position;
 	glm::vec3 color;
 	glm::vec2 textureCoords;
 
@@ -31,7 +31,11 @@ struct GraphicsPipelineUtils
 {
 	static VkCommandBuffer BeginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
 	static void EndSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer);
-	static VkImageView CreateImageView(VkImage image, VkFormat format, VkDevice device);
+	static VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VkDevice device);
+	static VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling,
+	                             VkFormatFeatureFlags features, VkPhysicalDevice physicalDevice);
+	static VkFormat FindDepthFormat(VkPhysicalDevice physicalDevice);
+	static bool HasStencilComponent(VkFormat format);
 };
 
 #endif

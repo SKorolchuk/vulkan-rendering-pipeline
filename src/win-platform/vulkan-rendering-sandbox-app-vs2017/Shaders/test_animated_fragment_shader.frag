@@ -10,10 +10,10 @@ uniform vec2 mouse;
 uniform vec2 resolution;
 
 float random( vec2 p )
-{	
+{
 	return fract( sin( fract( sin( p.x ) ) + p.y) *142.17563);
 }
-       
+
 float worley( vec2 p, float timeSpeed )
 {
 	float d = 10.0;
@@ -65,13 +65,13 @@ float pass( vec2 uv, float timeSpeed )
 }
 
 void main() {
-    vec2 uv = gl_FragCoord.xy ;
+	vec2 uv = gl_FragCoord.xy ;
 
 	float t = worley2( gl_FragCoord.xy / 1.6 );
 	vec3 finalColor = vec3( 0,0,0);
-	
-	t = pass( uv/2.0, 0.5 );     
+
+	t = pass( uv/2.0, 0.5 );
 	finalColor += vec3(sqrt(t*12.0), sqrt(t*25.0), sqrt(t * 10.0) );
- 
-    outColor = vec4(finalColor, 0.2);
-}   
+
+	outColor = vec4(finalColor, 0.2);
+}

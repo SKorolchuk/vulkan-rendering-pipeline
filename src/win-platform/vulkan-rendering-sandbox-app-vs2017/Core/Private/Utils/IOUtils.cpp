@@ -9,12 +9,22 @@ std::vector<char> ShaderExtensions::ReadShaderFile(const std::string& shaderFile
 		throw std::runtime_error("shader file" + shaderFileName + " not found");
 	}
 
-	size_t fileSize = static_cast<size_t>(shaderFile.tellg());
+	const size_t fileSize = static_cast<size_t>(shaderFile.tellg());
 
-	std::vector<char> buffer(fileSize);
+	std::vector<char> buffer(fileSize + (4 - fileSize % 4));
 
 	shaderFile.seekg(0);
 	shaderFile.read(buffer.data(), fileSize);
+
+	// unify shader length to be in power of 4
+	//const uint8_t remainder = fileSize % 4;
+	//if (buffer.empty() != 0)
+	//{
+	//	for (uint8_t index = 0; index <= remainder; ++index)
+	//	{
+	//		buffer.push_back(' ');
+	//	}
+	//}
 
 	shaderFile.close();
 

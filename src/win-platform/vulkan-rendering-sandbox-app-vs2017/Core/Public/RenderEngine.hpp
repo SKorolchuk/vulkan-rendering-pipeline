@@ -46,6 +46,7 @@ namespace VulkanCore
 			 VkDebugReportCallbackEXT callback,
 			 const VkAllocationCallbacks* pAllocator);
 		 std::vector<const char*> GetRequiredExtensions() const;
+
 		 bool ThrottleCheck() const;
 		 void CreateVulkanInstance();
 		 void SetupDebugCallback();
@@ -73,7 +74,9 @@ namespace VulkanCore
 		 void CreateIndexBuffer();
 		 void CreateDescriptorPool();
 		 void CreateUniformBuffer();
-		 void UpdateUniformBuffer(uint32_t ImageIndex);
+		 void CreateDepthResources();
+		 void UpdateUniformBuffer(uint32_t currentImage);
+
 		 static int RateDeviceSuitability(VkPhysicalDevice device);
 		 QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device) const;
 		 VkInstance vkInstance;
@@ -128,6 +131,12 @@ namespace VulkanCore
 		 VkDeviceMemory vkTextureImageMemory;
 		 VkImageView vkTextureImageView;
 		 VkSampler vkTextureSampler;
+
+		 // depth buffer
+
+		 std::vector<VkImage> vkDepthImages;
+		 std::vector<VkDeviceMemory> vkDepthImagesMemory;
+		 std::vector<VkImageView> vkDepthImagesView;
 
 		 const bool enableValidationLayers = true;
 		 const std::vector<const char*> validationLayers = {
