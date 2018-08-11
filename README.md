@@ -3,7 +3,7 @@
 
 # Demo Preview
 
-[![Vulkan API Rendering Engine - Milestone Demo, Code & Sample Assets](http://img.youtube.com/vi/NmwvGMmnQ0M/0.jpg)](https://www.youtube.com/watch?v=NmwvGMmnQ0M "Vulkan API Rendering Engine - Milestone Demo, Code & Sample Assets")
+[![Vulkan API Rendering Engine - Milestone Demo, Code & Sample Assets](http://img.youtube.com/vi/NmwvGMmnQ0M/0.jpg)](https://www.youtube.com/watch?v=NmwvGMmnQ0M "VulkanAPI Rendering Engine - Milestone Demo, Code & Sample Assets")
 
 # Repository contains set of example applications based on Vulkan API
 
