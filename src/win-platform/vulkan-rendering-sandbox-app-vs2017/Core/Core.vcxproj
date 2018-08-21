@@ -110,7 +110,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\..\..\..\..\VulkanSDK\1.1.73.0\Include;..\..\..\modules\glm;..\..\..\modules\json\single_include;..\..\..\modules\tinugltf;..\..\..\modules\gli\gli;..\..\..\modules\stb;..\..\..\modules\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\modules\tiny-obj-loader;..\..\..\..\..\VulkanSDK\1.1.73.0\Include;..\..\..\modules\glm;..\..\..\modules\json\single_include;..\..\..\modules\tinugltf;..\..\..\modules\gli\gli;..\..\..\modules\stb;..\..\..\modules\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <BrowseInformation>true</BrowseInformation>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -166,7 +166,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\..\..\..\..\VulkanSDK\1.1.73.0\Include;..\..\..\modules\glm;..\..\..\modules\json\single_include;..\..\..\modules\tinugltf;..\..\..\modules\gli\gli;..\..\..\modules\stb;..\..\..\modules\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\modules\tiny-obj-loader;..\..\..\..\..\VulkanSDK\1.1.73.0\Include;..\..\..\modules\glm;..\..\..\modules\json\single_include;..\..\..\modules\tinugltf;..\..\..\modules\gli\gli;..\..\..\modules\stb;..\..\..\modules\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
