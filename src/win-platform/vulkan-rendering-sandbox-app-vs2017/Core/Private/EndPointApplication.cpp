@@ -3,17 +3,23 @@
 VulkanCore::EndPointApplication::EndPointApplication() :
 	width(1280),
 	height(1024),
-	title("Vulkan App")
+	title("Vulkan App"),
+	modelPath("../Assets/Models/crystal.obj"),
+	baseColorTexturePath("../Assets/Textures/crystalis_1001_BaseColor.png")
 {
 }
 
 VulkanCore::EndPointApplication::EndPointApplication(
 	int witdth,
 	int height,
-	const char* title) :
+	const char* title,
+	const char* modelPath,
+	const char* baseColorTexturePath) :
 	width(width),
 	height(height),
-	title(title)
+	title(title),
+	modelPath(modelPath),
+	baseColorTexturePath(baseColorTexturePath)
 {
 }
 
@@ -41,7 +47,13 @@ void VulkanCore::EndPointApplication::OpenWindow()
 	glfwSetWindowUserPointer(this->window, this);
 	glfwSetFramebufferSizeCallback(this->window, FramebufferResizeCallback);
 
-	this->VkEngine = new RenderEngine(this->width, this->height, this->window);
+	this->VkEngine = new RenderEngine(
+		this->width,
+		this->height,
+		this->modelPath,
+		this->baseColorTexturePath,
+		this->window
+	);
 }
 
 void VulkanCore::EndPointApplication::Init()

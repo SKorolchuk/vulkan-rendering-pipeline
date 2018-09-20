@@ -17,7 +17,13 @@ namespace VulkanCore
 	 {
 	 public:
 		 const static int MAX_FRAMES_IN_FLIGHT = 2;
-		 RenderEngine(int width, int height, GLFWwindow* window);
+		 RenderEngine(
+			 int width,
+			 int height,
+			 std::string modelPath,
+			 std::string baseColorTexturePath,
+			 GLFWwindow* window
+		 );
 		 ~RenderEngine();
 		 virtual void BootstrapPipeline();
 		 virtual void CleanPipeline();
@@ -28,6 +34,8 @@ namespace VulkanCore
 	 protected:
 		 int ViewportWidth;
 		 int ViewportHeight;
+		 std::string ModelPath;
+		 std::string BaseColorTexturePath;
 		 GLFWwindow *GLWindow = nullptr;
 		 bool IsPipelineInitialized = false;
 		 bool CheckVkValidationLayerSupport() const;
@@ -70,8 +78,7 @@ namespace VulkanCore
 		 bool IsDeviceSuitable(VkPhysicalDevice device) const;
 		 bool CheckDeviceExtensionsSupport(VkPhysicalDevice device) const;
 		 void CreateRenderPass();
-		 void CreateVertexBuffer();
-		 void CreateIndexBuffer();
+		 void CreateGeometryBuffers();
 		 void CreateDescriptorPool();
 		 void CreateUniformBuffer();
 		 void CreateDepthResources();

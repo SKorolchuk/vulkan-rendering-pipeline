@@ -1,8 +1,15 @@
 #include "../Public/RenderEngine.hpp"
 
-VulkanCore::RenderEngine::RenderEngine(int width, int height, GLFWwindow* window) :
+VulkanCore::RenderEngine::RenderEngine(
+	int width,
+	int height,
+	std::string modelPath,
+	std::string baseColorTexturePath,
+	GLFWwindow* window) :
 	ViewportWidth(width),
 	ViewportHeight(height),
+	ModelPath(modelPath),
+	BaseColorTexturePath(baseColorTexturePath),
 	GLWindow(window)
 {
 	if (!this->IsPipelineInitialized)
@@ -42,8 +49,7 @@ void VulkanCore::RenderEngine::BootstrapPipeline()
 	this->LoadTextures();
 	this->CreateTextureViews();
 	this->InitializeSampler();
-	this->CreateVertexBuffer();
-	this->CreateIndexBuffer();
+	this->CreateGeometryBuffers();
 	this->CreateUniformBuffer();
 	this->CreateDescriptorPool();
 	this->CreateDescriptorSet();
@@ -286,7 +292,7 @@ void VulkanCore::RenderEngine::CreateCommandBuffers()
 		vkCmdBindIndexBuffer(
 			this->vkCommandBuffers[i],
 			this->vkIndexBuffer,
-			0, VK_INDEX_TYPE_UINT16);
+			0, VK_INDEX_TYPE_UINT32);
 
 		vkCmdBindDescriptorSets(
 			this->vkCommandBuffers[i],
@@ -579,7 +585,7 @@ void VulkanCore::RenderEngine::LoadTextures()
 {
 	int textureWidth, textureHeight, textureChannels;
 
-	this->PixelBuffer = ShaderExtensions::CreateTextureImage("../Assets/Textures/New_Graph_basecolor.png", &textureWidth, &textureHeight, &textureChannels);
+	this->PixelBuffer = ShaderExtensions::CreateTextureImage(this->BaseColorTexturePath.c_str(), &textureWidth, &textureHeight, &textureChannels);
 
 	VkDeviceSize imageSize = textureWidth * textureHeight * 4;
 
@@ -1058,92 +1064,18 @@ void VulkanCore::RenderEngine::CreateRenderPass()
 	}
 }
 
-void VulkanCore::RenderEngine::CreateVertexBuffer()
+void VulkanCore::RenderEngine::CreateGeometryBuffers()
 {
-	std::vector<Vertex> vertices = Vertex::GetSampleVertexMatrix();
-
-	const VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
-
-
-	VkBuffer stagingBuffer;
-	VkDeviceMemory stagingBufferMemory;
-
-	MemoryUtils::CreateBuffer(
-		bufferSize,
-		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+	MeshExtensions::LoadModelToMemoryBuffer(
+		this->ModelPath.c_str(),
 		this->vkDevice,
 		this->vkPhysicalDevice,
-		stagingBuffer,
-		stagingBufferMemory);
-
-	void* data;
-	vkMapMemory(this->vkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-	memcpy(data, vertices.data(), static_cast<size_t>(bufferSize));
-	vkUnmapMemory(this->vkDevice, stagingBufferMemory);
-
-	MemoryUtils::CreateBuffer(
-		bufferSize,
-		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-		this->vkDevice,
-		this->vkPhysicalDevice,
-		this->vkVertexBuffer,
-		this->vkVertexBufferMemory);
-
-	MemoryUtils::CopyBuffer(
-		stagingBuffer,
-		this->vkVertexBuffer,
-		bufferSize,
 		this->vkCommandPool,
-		this->vkDevice,
-		this->vkGraphicsQueue);
-
-	vkDestroyBuffer(this->vkDevice, stagingBuffer, nullptr);
-	vkFreeMemory(this->vkDevice, stagingBufferMemory, nullptr);
-}
-
-void VulkanCore::RenderEngine::CreateIndexBuffer()
-{
-	std::vector<uint16_t> indices = Vertex::GetSampleVertexIndices();
-	VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
-
-	VkBuffer stagingBuffer;
-	VkDeviceMemory stagingBufferMemory;
-
-	MemoryUtils::CreateBuffer(
-		bufferSize,
-		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		this->vkDevice,
-		this->vkPhysicalDevice,
-		stagingBuffer,
-		stagingBufferMemory);
-
-	void* data;
-	vkMapMemory(this->vkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-	memcpy(data, indices.data(), static_cast<size_t>(bufferSize));
-	vkUnmapMemory(this->vkDevice, stagingBufferMemory);
-
-	MemoryUtils::CreateBuffer(
-		bufferSize,
-		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-		this->vkDevice,
-		this->vkPhysicalDevice,
-		vkIndexBuffer,
-		vkIndexBufferMemory);
-
-	MemoryUtils::CopyBuffer(
-		stagingBuffer,
-		vkIndexBuffer,
-		bufferSize,
-		this->vkCommandPool,
-		this->vkDevice,
-		this->vkGraphicsQueue);
-
-	vkDestroyBuffer(this->vkDevice, stagingBuffer, nullptr);
-	vkFreeMemory(this->vkDevice, stagingBufferMemory, nullptr);
+		this->vkGraphicsQueue,
+		this->vkVertexBuffer,
+		this->vkVertexBufferMemory,
+		this->vkIndexBuffer,
+		this->vkIndexBufferMemory);
 }
 
 void VulkanCore::RenderEngine::CreateDescriptorPool()
@@ -1231,13 +1163,16 @@ void VulkanCore::RenderEngine::UpdateUniformBuffer(uint32_t currentImage)
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
 	UniformBufferObject ubo = {};
-	ubo.model = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.model = rotate(glm::mat4(1.0f), time * glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	ubo.view = lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	ubo.projection = glm::perspective(glm::radians(45.0f), this->vkExtent.width / static_cast<float>(this->vkExtent.height), 0.1f, 10.0f);
+	ubo.projection = glm::perspective(glm::radians(45.0f), this->vkExtent.width / static_cast<float>(this->vkExtent.height), 0.01f, 2000.0f);
 
+	//ubo.projection[0][0] *= -1;
 	ubo.projection[1][1] *= -1;
+	//ubo.projection[2][2] *= -1;
+	//ubo.projection[3][3] *= -1;
 
 	void* data;
 	vkMapMemory(this->vkDevice, this->vkUniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);

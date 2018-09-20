@@ -9,7 +9,13 @@ namespace VulkanCore
 	{
 	public:
 		EndPointApplication();
-		EndPointApplication(int witdth, int height, const char* title);
+		EndPointApplication(
+			int witdth,
+			int height,
+			const char* title,
+			const char* modelPath,
+			const char* baseColorTexturePath
+		);
 		~EndPointApplication();
 		virtual void Run();
 		RenderEngine *VkEngine;
@@ -27,6 +33,8 @@ namespace VulkanCore
 		int width;
 		int height;
 		std::string title;
+		std::string modelPath;
+		std::string baseColorTexturePath;
 	};
 
 	static void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
