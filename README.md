@@ -13,7 +13,7 @@
 - `GLFW` (submodule reference)
 - `GLM` ((submodule reference)
 - `OpenCV` (submodule reference)
-- `Vulkan SDK v.1.1.73.0` (external dependency, see `Build & Install` for details)
+- `Vulkan SDK v.1.1.92.1` (external dependency, see `Build & Install` for details)
 - `C++17 STD and STL libs`  (environment dependencies)
 - `Visual Studio 2017 C++ Compiler and Windows 10 SDK` (environment dependencies)
 
